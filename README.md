@@ -31,7 +31,8 @@ Options are <tt>ssh</tt> <tt>git</tt> <tt>http</tt> <tt>https</tt> <tt>svn</tt>
 The current and default version of the api is <tt>v3</tt> but this will allow you to target older versions if needed.
 
 ###### github_cache \<optional\>
-This will be the lifetime of the cache files in seconds, default <tt>900</tt>. Cache files will be created into the: ~/.chef directory.  
+This will be the lifetime of the cache files in seconds, default: <tt>900</tt>   
+Cache files will be created into the: ~/.chef directory.  
 We use cache files to offload the api calls and increase the performance for additional executions.
 
 ###### github_ssl_verify_mode \<optional\>

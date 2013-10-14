@@ -6,14 +6,14 @@ Chef knife plugin to interact with the github enterprise appliance.
 Attributes
 ==========
 
-Configure the following attributes within your knife.rb
+You can configure the following attributes within your knife.rb
 
-    github_url               'https://github.company.lan'  
-    github_organizations     [ 'cookbooks', 'opscode-cookbooks' ] 
-    github_protocol          'ssh' 
-    github_api_version       'v3'  
-    github_cache             900  
-    github_ssl_verify_mode   'verify_none'
+    knife[:github_url]             = 'https://github.company.lan'  
+    knife[:github_organizations]   = [ 'customer-cookbooks', 'central-cookbooks' ] 
+    knife[:github_link]            = 'ssh' 
+    knife[:github_api_version]     = 'v3'  
+    knife[:github_cache]           = 900  
+    knife[:github_ssl_verify_mode] = 'verify_none'
 
 ###### github_url
 This will be the URL to your local github appliance.  
@@ -23,9 +23,9 @@ Here you can also use the github.com address if you don't have an internal appli
 Here you specify the organizations that you want to taget when searching for cookbooks.  
 The first entry will have priority over the other entries.
 
-###### github_protocol \<optional\>
-You can specify the prococol that you would like to use to download your cookbooks, default is <tt>ssh</tt>.   
-Options are <tt>ssh</tt> <tt>git</tt> <tt>http</tt> <tt>https</tt>
+###### github_link \<optional\>
+You can specify the link type that you would like to use to download your cookbooks, default is <tt>ssh</tt>.   
+Options are <tt>ssh</tt> <tt>git</tt> <tt>http</tt> <tt>https</tt> <tt>svn</tt> 
 
 ###### github_api_version \<optional\>
 The current and default version of the api is <tt>v3</tt> but this will allow you to target older versions if needed.

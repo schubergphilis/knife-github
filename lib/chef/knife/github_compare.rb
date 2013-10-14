@@ -21,7 +21,7 @@ require 'chef/knife'
 class Chef
   class Knife
 
-    class GithubList < Knife
+    class GithubCompare < Knife
 
       deps do
         require 'chef/knife/github_base'
@@ -29,17 +29,12 @@ class Chef
         include Chef::Knife::GithubBase
       end
       
-      banner "knife github list [COOKBOOK] (options)"
+      banner "knife github compare [COOKBOOK] (options)"
       category "github"
 
       option :fields,
              :long => "--fields 'NAME, NAME'",
              :description => "The fields to output, comma-separated"
-
-      option :fieldlist,
-             :long => "--fieldlist",
-             :description => "The available fields to output/filter",
-             :boolean => true
 
       option :noheader,
              :long => "--noheader",
@@ -52,8 +47,14 @@ class Chef
              :description => "Get all cookbooks from github.",
              :boolean => true
 
-      def run
+      option :mismatch,
+             :short => "-m",
+             :long => "--mismatch",
+             :description => "Only show cookbooks where versions mismatch",
+             :boolean => true
 
+      def run
+#         extend Chef::Mixin::ShellOut
         # validate base options from base module.
         validate_base_options      
 
@@ -67,34 +68,27 @@ class Chef
         # Get all chef cookbooks and versions (hopefully chef does the error handeling).
         cb_and_ver = rest.get_rest("/cookbooks?num_version=1")
 
-        # Get the github link
-        git_link = get_github_link(@github_link)
-    
-        
+
         # Filter all repo information based on the tags that we can find
-        if config[:fields] || config[:fieldlist]
-          all_repos = get_all_repos
-          config[:fields] = "name" if config[:fields].nil? || config[:fields].empty?
-        else 
         all_repos = {}
         if config[:all]
           get_all_repos.each { |k,v|
             cookbook = k
             cb_and_ver[k].nil? || cb_and_ver[k]['versions'].nil? ? version = "" : version = cb_and_ver[k]['versions'][0]['version']
-            gh_url = v["#{git_link}"]
+            ssh_url = v['ssh_url']
             gh_tag  = v['latest_tag']
-            all_repos[cookbook] = { 'name' => cookbook, 'latest_cb_tag' => version, 'git_url' => gh_url, 'latest_gh_tag' => gh_tag }
+            all_repos[cookbook] = { 'name' => cookbook, 'latest_cb_tag' => version, 'ssh_url' => ssh_url, 'latest_gh_tag' => gh_tag }
           } 
         else
           cb_and_ver.each { |k,v|
             cookbook = k
             version  = v['versions'][0]['version']
-            get_all_repos[k].nil? || get_all_repos[k]["#{git_link}"].nil? ? gh_url = ui.color("ERROR: Cannot find cookbook!", :red) : gh_url = get_all_repos[k]["#{git_link}"]
+            get_all_repos[k].nil? || get_all_repos[k]['ssh_url'].nil? ? ssh_url = ui.color("ERROR: Cannot find cookbook!", :red) : ssh_url = get_all_repos[k]['ssh_url']
             get_all_repos[k].nil? || get_all_repos[k]['latest_tag'].nil? ? gh_tag = ui.color("ERROR: No tags!", :red) : gh_tag = get_all_repos[k]['latest_tag']
-            all_repos[cookbook] = { 'name' => cookbook, 'latest_cb_tag' => version, 'git_url' => gh_url, 'latest_gh_tag' => gh_tag } 
+            all_repos[cookbook] = { 'name' => cookbook, 'latest_cb_tag' => version, 'ssh_url' => ssh_url, 'latest_gh_tag' => gh_tag } 
           }
         end
-        end
+ 
 
         # Filter only on the cookbook name if its given on the command line
         @cookbook_name = name_args.first unless name_args.empty?
@@ -104,6 +98,7 @@ class Chef
           repos = all_repos 
         end
 
+
         # Displaying information based on the fields and repos
         if config[:fields]
           object_list = []
@@ -111,7 +106,9 @@ class Chef
         else
           object_list = [
             ui.color('Cookbook', :bold),
-            ui.color('Github', :bold)
+            ui.color('Tag', :bold),
+            ui.color('Github', :bold),
+            ui.color('Tag', :bold)
           ]
         end
 
@@ -122,45 +119,21 @@ class Chef
           if config[:fields]
              config[:fields].downcase.split(',').each { |n| object_list << ((r[("#{n}").strip]).to_s || 'n/a') }
           else
-            object_list << (r['name'] || 'n/a')
-            object_list << (r['git_url'] || 'n/a')
+            next if config[:mismatch] && (r['latest_gh_tag'] == r['latest_cb_tag'])
+            r['latest_gh_tag'] == r['latest_cb_tag'] ? color = :white : color = :yellow
+            color = :white if config[:all]
+ 
+            object_list << ui.color((r['name'] || 'n/a'), color)
+            object_list << ui.color((r['latest_cb_tag'] || 'n/a'), color)
+            object_list << ui.color((r['ssh_url'] || 'n/a'), color)
+            object_list << ui.color((r['latest_gh_tag'] || 'n/a'), color)
           end
         end
 
         puts ui.list(object_list, :uneven_columns_across, columns)
-        list_object_fields(repos) if locate_config_value(:fieldlist)
+
       end
-
-          def list_object_fields(object)
-            # pp object
-            # return
-            exit 1 if object.nil? || object.empty?
-            object_fields = [
-              ui.color('Key', :bold),
-              ui.color('Type', :bold),
-              ui.color('Value', :bold)
-            ]
-
-            object.first.each do |n|
-              if n.class == Hash
-                n.keys.each do |k,v|
-                  object_fields << ui.color(k, :yellow, :bold)
-                  object_fields << n[k].class.to_s
-                  if n[k].kind_of?(Array)
-                    object_fields << '<Array>'
-                  elsif  n[k].kind_of?(Hash)
-                    object_fields << '<Hash>'
-                  else
-                    object_fields << ("#{n[k]}").strip.to_s
-                  end
-                end
-              end
-            end
-
-            puts "\n"
-            puts ui.list(object_fields, :uneven_columns_across, 3)
-          end
- 
+    
       def get_all_repos(orgs)
         # Parse every org and merge all into one hash
         repos = {}
@@ -169,6 +142,8 @@ class Chef
         end
         repos
       end
+
+
 
       def get_repos(org)
         dns_name  = get_dns_name(@github_url)
@@ -229,6 +204,39 @@ class Chef
         url = url.downcase.gsub("http://","") if url.downcase.start_with?("http://")
         url = url.downcase.gsub("https://","") if url.downcase.start_with?("https://")
         url
+      end
+
+
+      def send_request(url, params = {})
+        params['response'] = 'json'
+
+        params_arr = []
+        params.sort.each { |elem|
+          params_arr << elem[0].to_s + '=' + CGI.escape(elem[1].to_s).gsub('+', '%20').gsub(' ','%20')
+        }
+        data = params_arr.join('&')
+
+        if url.nil? || url.empty?
+          puts "Error: Please specify a valid Github URL."
+          exit 1
+        end
+
+        github_url = "#{url}?#{data}" 
+        # Chef::Log.debug("URL: #{github_url}")
+
+        uri = URI.parse(github_url)
+        req_body = Net::HTTP::Get.new(uri.request_uri)
+        request = Chef::REST::RESTRequest.new("GET", uri, req_body, headers={})
+      
+        response = request.call
+      
+        if !response.is_a?(Net::HTTPOK) then
+          puts "Error #{response.code}: #{response.message}"
+          puts JSON.pretty_generate(JSON.parse(response.body))
+          puts "URL: #{url}"
+          exit 1
+        end
+        json = JSON.parse(response.body)
       end
 
     end

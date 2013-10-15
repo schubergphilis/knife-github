@@ -87,7 +87,9 @@ class Chef
             config[key] || Chef::Config[:knife][key]
           end
 
-          def get_github_link(link)
+          def get_github_link(object)
+            return nil if object.nil? || object.empty?
+            link = locate_config_value('github_link')
             git_link = case link
               when 'ssh' then 'ssh_url'
               when 'http' then 'clone_url'
@@ -97,7 +99,7 @@ class Chef
               when 'git' then 'git_url'
               else 'ssh_url'
             end
-            git_link
+            object[git_link]
           end
 
           def send_request(url, params = {})

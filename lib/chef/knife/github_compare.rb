@@ -54,7 +54,6 @@ class Chef
              :boolean => true
 
       def run
-#         extend Chef::Mixin::ShellOut
         # validate base options from base module.
         validate_base_options      
 
@@ -64,31 +63,33 @@ class Chef
         # Gather all repo information from github.
         get_all_repos = get_all_repos(@github_organizations.reverse)
 
-
-        # Get all chef cookbooks and versions (hopefully chef does the error handeling).
-        cb_and_ver = rest.get_rest("/cookbooks?num_version=1")
-
+        # Get all chef cookbooks and versions.
+        cookbooks = rest.get_rest("/cookbooks?num_version=1")
 
         # Filter all repo information based on the tags that we can find
-        all_repos = {}
-        if config[:all]
-          get_all_repos.each { |k,v|
-            cookbook = k
-            cb_and_ver[k].nil? || cb_and_ver[k]['versions'].nil? ? version = "" : version = cb_and_ver[k]['versions'][0]['version']
-            ssh_url = v['ssh_url']
-            gh_tag  = v['latest_tag']
-            all_repos[cookbook] = { 'name' => cookbook, 'latest_cb_tag' => version, 'ssh_url' => ssh_url, 'latest_gh_tag' => gh_tag }
-          } 
+        if config[:fields] || config[:fieldlist]
+          all_repos = get_all_repos
+          config[:fields] = "name" if config[:fields].nil? || config[:fields].empty?
         else
-          cb_and_ver.each { |k,v|
-            cookbook = k
-            version  = v['versions'][0]['version']
-            get_all_repos[k].nil? || get_all_repos[k]['ssh_url'].nil? ? ssh_url = ui.color("ERROR: Cannot find cookbook!", :red) : ssh_url = get_all_repos[k]['ssh_url']
-            get_all_repos[k].nil? || get_all_repos[k]['latest_tag'].nil? ? gh_tag = ui.color("ERROR: No tags!", :red) : gh_tag = get_all_repos[k]['latest_tag']
-            all_repos[cookbook] = { 'name' => cookbook, 'latest_cb_tag' => version, 'ssh_url' => ssh_url, 'latest_gh_tag' => gh_tag } 
-          }
+          all_repos = {}
+          if config[:all]
+            get_all_repos.each { |k,v|
+              cookbook = k
+              cookbooks[k].nil? || cookbooks[k]['versions'].nil? ? version = "" : version = cookbooks[k]['versions'][0]['version']
+              gh_url = get_github_link(v)
+              gh_tag  = v['latest_tag']
+              all_repos[cookbook] = { 'name' => cookbook, 'latest_cb_tag' => version, 'git_url' => gh_url, 'latest_gh_tag' => gh_tag }
+            }
+          else
+            cookbooks.each { |k,v|
+              cookbook = k
+              version  = v['versions'][0]['version']
+              get_all_repos[k].nil? || get_github_link(get_all_repos[k]).nil? ? gh_url = ui.color("ERROR: Cannot find cookbook!", :red) : gh_url = get_github_link(get_all_repos[k])
+              get_all_repos[k].nil? || get_all_repos[k]['latest_tag'].nil? ? gh_tag = ui.color("ERROR: No tags!", :red) : gh_tag = get_all_repos[k]['latest_tag']
+              all_repos[cookbook] = { 'name' => cookbook, 'latest_cb_tag' => version, 'git_url' => gh_url, 'latest_gh_tag' => gh_tag }
+            }
+          end
         end
- 
 
         # Filter only on the cookbook name if its given on the command line
         @cookbook_name = name_args.first unless name_args.empty?
@@ -97,7 +98,6 @@ class Chef
         else
           repos = all_repos 
         end
-
 
         # Displaying information based on the fields and repos
         if config[:fields]
@@ -125,7 +125,7 @@ class Chef
  
             object_list << ui.color((r['name'] || 'n/a'), color)
             object_list << ui.color((r['latest_cb_tag'] || 'n/a'), color)
-            object_list << ui.color((r['ssh_url'] || 'n/a'), color)
+            object_list << ui.color((r['git_url'] || 'n/a'), color)
             object_list << ui.color((r['latest_gh_tag'] || 'n/a'), color)
           end
         end

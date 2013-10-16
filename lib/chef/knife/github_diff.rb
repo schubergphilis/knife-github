@@ -120,6 +120,7 @@ class Chef
 			      ui.error("Failed to checkout branch #{version}")
 		          exit 1
               end
+          else
 			  ui.info("Version #{version} of #{name} has no tag, using latest for diff")
 		  end
           FileUtils.remove_entry("#{@github_tmp}/git/#{name}/.git")

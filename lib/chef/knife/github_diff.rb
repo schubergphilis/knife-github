@@ -110,6 +110,18 @@ class Chef
       end
 
 	  def do_diff(name, version)
+		  # Check to see if there is a tag matching the version
+          Dir.chdir("#{@github_tmp}/git/#{name}")
+		  if `git tag`.split("\n").include?(version)
+			  ui.info("Tag version #{version} found, checking that out for diff")
+			  # Tag found so checkout that tag
+		      `git checkout -b #{version}`
+		      if !$?.exitstatus == 0
+			      ui.error("Failed to checkout branch #{version}")
+		          exit 1
+              end
+			  ui.info("Version #{version} of #{name} has no tag, using latest for diff")
+		  end
           FileUtils.remove_entry("#{@github_tmp}/git/#{name}/.git")
           output = `git diff --color #{@github_tmp}/git/#{name} #{@github_tmp}/cb/#{name}-#{version} 2>&1`
 		  if output.length == 0

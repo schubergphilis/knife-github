@@ -77,6 +77,7 @@ class Chef
 
         # Get the cookbook name from the command line
         @cookbook_name = name_args.first unless name_args.empty?
+        cookbook_version = name_args[1] unless name_args[1].nil?
         if @cookbook_name
           repo = get_all_repos.select { |k,v| v["name"] == @cookbook_name }
         else
@@ -95,10 +96,51 @@ class Chef
           Chef::Log.error("Cannot find the link for the repository with the name: #{@cookbook_name}")
           exit 1
         end
+        Dir.mkdir(@github_tmp)
+		if ! get_clone(github_link, @cookbook_name)
+          Chef::Log.error("Could not clone the repository for: #{@cookbook_name}")
+          FileUtils.remove_entry(@github_tmp)
+          exit 1
+        end
+		version = get_cookbook_copy(@cookbook_name, cookbook_version)
+		do_diff(@cookbook_name, version)
+        FileUtils.remove_entry(@github_tmp)
 
 
       end
-  
+
+	  def do_diff(name, version)
+          FileUtils.remove_entry("#{@github_tmp}/git/#{name}/.git")
+          output = `git diff --color #{@github_tmp}/git/#{name} #{@github_tmp}/cb/#{name}-#{version} 2>&1`
+	  	  ui.msg(output)
+	  end
+
+	  def get_cookbook_copy(name, version)
+          Dir.mkdir("#{@github_tmp}/cb")
+		  args = ['cookbook', 'download',  name ]
+		  args.push version if version
+		  #args.push "-d #{@github_tmp}"
+		  #knife = Chef::Knife::new(args)
+		  #pp knife.methods
+          Dir.chdir("#{@github_tmp}/cb")
+		  Chef::Knife::CookbookDownload.run(args)
+		  Dir.entries("#{@github_tmp}/cb").each do |d|
+			  if d =~ /#{name}-(.*)/
+				version = $1
+			  end
+		  end
+		  return version
+	  end 
+
+      def get_clone(url, cookbook)
+        Dir.mkdir("#{@github_tmp}/git")
+        output = `git clone #{url} #{@github_tmp}/git/#{cookbook} 2>&1`
+		if $?.exitstatus != 0
+			return false
+		end
+		return true
+      end 
+
       def get_all_repos(orgs)
         # Parse every org and merge all into one hash
         repos = {}

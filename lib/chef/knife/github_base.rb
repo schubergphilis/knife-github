@@ -55,6 +55,10 @@ class Chef
                  :long => "--github_cache MIN",
                  :description => "Max life-time for local cache files in minutes (default: 900)"
 
+          option :github_tmp,
+                 :long => "--github_tmp PATH",
+                 :description => "A path where temporary files for the diff function will be made default: /tmp/gitdiff)"
+
           def validate_base_options
             unless locate_config_value('github_url')
               ui.error "Github URL not specified"
@@ -71,6 +75,8 @@ class Chef
             @github_link            = locate_config_value("github_link") || 'ssh'
             @github_api_version     = locate_config_value("github_api_version") || 'v3'
             @github_ssl_verify_mode = locate_config_value("github_ssl_verify_mode") || 'verify_peer'
+            @github_tmp             = locate_config_value("github_tmp") || '/var/tmp/gitdiff'
+            @github_tmp             = "#{@github_tmp}#{Process.pid}"
           end
 
           def display_debug_info

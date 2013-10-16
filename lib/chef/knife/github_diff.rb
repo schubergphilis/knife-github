@@ -136,9 +136,6 @@ class Chef
           Dir.mkdir("#{@github_tmp}/cb")
 		  args = ['cookbook', 'download',  name ]
 		  args.push version if version
-		  #args.push "-d #{@github_tmp}"
-		  #knife = Chef::Knife::new(args)
-		  #pp knife.methods
           Dir.chdir("#{@github_tmp}/cb")
 		  Chef::Knife::CookbookDownload.run(args)
 		  Dir.entries("#{@github_tmp}/cb").each do |d|

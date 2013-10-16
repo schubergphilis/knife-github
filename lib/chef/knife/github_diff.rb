@@ -112,7 +112,11 @@ class Chef
 	  def do_diff(name, version)
           FileUtils.remove_entry("#{@github_tmp}/git/#{name}/.git")
           output = `git diff --color #{@github_tmp}/git/#{name} #{@github_tmp}/cb/#{name}-#{version} 2>&1`
-	  	  ui.msg(output)
+		  if output.length == 0
+			  ui.info("No differences found")
+		  else
+	  	  	ui.msg(output)
+		  end
 	  end
 
 	  def get_cookbook_copy(name, version)

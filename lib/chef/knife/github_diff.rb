@@ -137,7 +137,10 @@ class Chef
 		  args = ['cookbook', 'download',  name ]
 		  args.push version if version
           Dir.chdir("#{@github_tmp}/cb")
-		  Chef::Knife::CookbookDownload.run(args)
+                  download = Chef::Knife::CookbookDownload.new(args)
+                  download.config[:download_directory] = "#{@github_tmp}/cb"
+                  download.run
+
 		  Dir.entries("#{@github_tmp}/cb").each do |d|
 			  if d =~ /#{name}-(.*)/
 				version = $1

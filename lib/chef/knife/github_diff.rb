@@ -29,7 +29,7 @@ class Chef
         include Chef::Knife::GithubBase
       end
       
-      banner "knife github diff COOKBOOK (options)"
+      banner "knife github diff COOKBOOK [version] (options)"
       category "github"
 
       option :all,

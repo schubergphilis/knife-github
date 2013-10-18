@@ -49,6 +49,12 @@ class Chef
         # Display information if debug mode is on.
         display_debug_info
 
+        # Step 1 collect the information from the user
+        #        Which github repo/org must we use
+        # Gather all repo information from github.
+        get_all_repos = get_all_repos(@github_organizations.reverse)
+        pp get_all_repos
+
       end
 
 

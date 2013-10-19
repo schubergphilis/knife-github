@@ -94,7 +94,6 @@ class Chef
           end
 
           def get_github_link(object)
-            return nil if object.nil? || object.empty?
             link = locate_config_value('github_link')
             git_link = case link
               when 'ssh' then 'ssh_url'
@@ -105,7 +104,11 @@ class Chef
               when 'git' then 'git_url'
               else 'ssh_url'
             end
-            object[git_link]
+            if object.nil? || object.empty?
+              return git_link
+            else
+              return object[git_link]
+            end
           end
 
           def send_request(url, params = {})

@@ -46,9 +46,6 @@ module KnifeGithubSearch
       # Display information if debug mode is on.
       display_debug_info
 
-      # Get the github link
-      git_link = get_github_link(@github_link)
-    
       # Get the name_args from the command line
       query = name_args.join(' ')
 
@@ -56,11 +53,11 @@ module KnifeGithubSearch
         Chef::Log.error("Please specify a search query")
         exit 1
       end 
-      
+
       result = github_search_repos(query)
 
       if config[:link]
-        columns = [ 'score,Score', 'full_name,Full Name', "#{git_link},Link" ]
+        columns = [ 'score,Score', 'full_name,Full Name', "html_url,Link" ]
       else
         columns = [ 'score,Score', 'full_name,Full Name', 'description,Description' ]
       end

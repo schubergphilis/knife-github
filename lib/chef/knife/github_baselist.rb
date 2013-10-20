@@ -40,7 +40,7 @@ class Chef
            :description => "Removes header from output",
            :boolean => true
 
-    def display_info(data, columns)
+    def display_info(data, columns, match = [])
       object_list = []
 
       if config[:fields]
@@ -56,7 +56,13 @@ class Chef
         if config[:fields]
            config[:fields].downcase.split(',').each { |n| object_list << ((v["#{n}".strip]).to_s || 'n/a') }
         else
-          columns.each { |c|  r = c.split(","); object_list << (v["#{r.first}"]).to_s || 'n/a' }
+          color = :white
+          if config[:mismatch] && !match.empty? && !config[:all]
+            matches = []; match.each { |m| matches << v[m].to_s }
+            next if matches.uniq.count == 1 
+            color = :yellow
+          end
+          columns.each { |c|  r = c.split(","); object_list << ui.color((v["#{r.first}"]).to_s, color) || 'n/a' }
         end
       end
 

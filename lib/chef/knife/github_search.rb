@@ -28,7 +28,7 @@ module KnifeGithubSearch
       include Chef::Knife::GithubBaseList
     end
       
-    banner "knife github seach STRING (options)"
+    banner "knife github search STRING (options)"
     category "github"
 
     option :link,

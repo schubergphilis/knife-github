@@ -52,29 +52,6 @@ class Chef
         # Get all chef cookbooks and versions (hopefully chef does the error handeling).
         cookbooks = rest.get_rest("/cookbooks?num_version=1")
 
-
-        # I think this filtering can be done way more elegant as it is right now...
-
-        # Filter all repo information based on the tags that we can find
-        #all_repos = {}
-        #if config[:all]
-        #  get_all_repos.each { |k,v|
-        #    cookbook = k
-        #    cookbooks[k].nil? || cookbooks[k]['versions'].nil? ? version = "" : version = cookbooks[k]['versions'][0]['version']
-        #    gh_url = v["#{git_link}"]
-        #    gh_tag  = v['latest_tag']
-        #    all_repos[cookbook] = { 'name' => cookbook, 'latest_cb_tag' => version, 'git_url' => gh_url, 'latest_gh_tag' => gh_tag }
-        #  } 
-        #else
-        #  cookbooks.each { |k,v|
-        #    cookbook = k
-        #    version  = v['versions'][0]['version']
-        #    get_all_repos[k].nil? || get_all_repos[k]["#{git_link}"].nil? ? gh_url = ui.color("ERROR: Cannot find cookbook!", :red) : gh_url = get_all_repos[k]["#{git_link}"]
-        #    get_all_repos[k].nil? || get_all_repos[k]['latest_tag'].nil? ? gh_tag = ui.color("ERROR: No tags!", :red) : gh_tag = get_all_repos[k]['latest_tag']
-        #    all_repos[cookbook] = { 'name' => cookbook, 'latest_cb_tag' => version, 'git_url' => gh_url, 'latest_gh_tag' => gh_tag } 
-        #  }
-        #end
-
         # Get the cookbook name from the command line
         @cookbook_name = name_args.first unless name_args.empty?
         cookbook_version = name_args[1] unless name_args[1].nil?

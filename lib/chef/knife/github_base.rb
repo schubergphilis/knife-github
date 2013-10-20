@@ -112,33 +112,6 @@ class Chef
             end
           end
 
-          def send_request(url, params = {})
-            params['response'] = 'json'
-
-            params_arr = []
-            params.sort.each { |elem|
-              params_arr << elem[0].to_s + '=' + CGI.escape(elem[1].to_s).gsub('+', '%20').gsub(' ','%20')
-            }
-            data = params_arr.join('&')
-    
-            github_url = "#{url}?#{data}"
-            # Chef::Log.debug("URL: #{github_url}")
-
-            uri = URI.parse(github_url)
-            req_body = Net::HTTP::Get.new(uri.request_uri)
-            request = Chef::REST::RESTRequest.new("GET", uri, req_body, headers={})
-
-            response = request.call
-
-            if !response.is_a?(Net::HTTPOK) then
-              puts "Error #{response.code}: #{response.message}"
-              puts JSON.pretty_generate(JSON.parse(response.body))
-              puts "URL: #{url}"
-              exit 1
-            end
-            json = JSON.parse(response.body)
-          end
-
           def get_all_repos(orgs)
             # Parse every org and merge all into one hash
             repos = {}
@@ -229,13 +202,18 @@ class Chef
               exit 1
             end
 
+            if @github_ssl_verify_mode == "verify_none"
+              config[:ssl_verify_mode] = :verify_none
+            elsif @github_ssl_verify_mode == "verify_peer"
+              config[:ssl_verify_mode] = :verify_peer
+            end
+
             github_url = "#{url}?#{data}" 
-            # Chef::Log.debug("URL: #{github_url}")
 
             uri = URI.parse(github_url)
             req_body = Net::HTTP::Get.new(uri.request_uri)
             request = Chef::REST::RESTRequest.new("GET", uri, req_body, headers={})
-          
+ 
             response = request.call
           
             if !response.is_a?(Net::HTTPOK) then

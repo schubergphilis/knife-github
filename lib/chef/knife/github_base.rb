@@ -27,6 +27,7 @@ class Chef
 
           deps do
             require 'chef/mixin/shell_out'
+            require 'mixlib/versioning'
           end
 
           option :github_url,
@@ -162,6 +163,7 @@ class Chef
             # use cache files
             JSON.parse(File.read(file_cache))
           end
+
           def create_cache_file(file_cache, org)
             Chef::Log.debug("Updating the cache file: #{file_cache}")
             result = get_repos_github(org)
@@ -181,7 +183,7 @@ class Chef
                 if key['tags_url']
                   tags = get_tags(key)
                   key['tags'] = tags unless tags.nil? || tags.empty?
-                  key['latest_tag'] = tags.first['name'] unless tags.nil? || tags.empty?
+                  key['latest_tag'] = get_latest_tag(tags)
                   arr << key
                 else 
                   arr << key 
@@ -191,18 +193,27 @@ class Chef
             end
             arr
           end
+
           def get_tags(repo)
             tags = send_request(repo['tags_url'])
             tags
           end
 
+          def get_latest_tag(tags)
+            return "" if tags.nil? || tags.empty?
+            tags_arr =[]
+            tags.each do |tag|
+              tags_arr.push(Mixlib::Versioning.parse(tag['name'])) if tag['name'] =~ /^(\d*)\.(\d*)\.(\d*)$/
+            end
+            return "" if tags_arr.nil? || tags_arr.empty?
+            return tags_arr.sort.last.to_s
+          end
 
           def get_dns_name(url)
             url = url.downcase.gsub("http://","") if url.downcase.start_with?("http://")
             url = url.downcase.gsub("https://","") if url.downcase.start_with?("https://")
             url
           end
-
 
           def send_request(url, params = {})
             params['response'] = 'json'

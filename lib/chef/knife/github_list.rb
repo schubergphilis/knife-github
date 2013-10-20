@@ -60,21 +60,18 @@ class Chef
         if config[:fields] || config[:fieldlist]
           all_repos = get_all_repos
           config[:fields] = "name" if config[:fields].nil? || config[:fields].empty?
-        else 
+        else
           all_repos = {}
           if config[:all]
             get_all_repos.each { |k,v|
-              cookbook = k
               cookbooks[k].nil? || cookbooks[k]['versions'].nil? ? version = "" : version = cookbooks[k]['versions'][0]['version']
-              all_repos[cookbook] = { 'name' => cookbook, 'latest_cb_tag' => version, 'git_url' => v["#{git_link}"], 'latest_gh_tag' => v['latest_tag'] }
-            } 
+              all_repos[k] = { 'name' => k, 'latest_cb_tag' => version, 'git_url' => v["#{git_link}"], 'latest_gh_tag' => v['latest_tag'] }
+            }
           else
             cookbooks.each { |k,v|
-              cookbook = k
-              version  = v['versions'][0]['version']
-              get_all_repos[k].nil? || get_github_link(get_all_repos[k]).nil? ? gh_url = ui.color("ERROR: Cannot find cookbook!", :red) : gh_url = get_all_repos[k]["#{git_link}"] 
+              get_all_repos[k].nil? || get_github_link(get_all_repos[k]).nil? ? gh_url = ui.color("ERROR: Cannot find cookbook!", :red) : gh_url = get_all_repos[k]["#{git_link}"]
               get_all_repos[k].nil? || get_all_repos[k]['latest_tag'].nil? ? gh_tag = ui.color("ERROR: No tags!", :red) : gh_tag = get_all_repos[k]['latest_tag']
-              all_repos[cookbook] = { 'name' => cookbook, 'latest_cb_tag' => version, 'git_url' => gh_url, 'latest_gh_tag' => gh_tag } 
+              all_repos[k] = { 'name' => k, 'latest_cb_tag' => v['versions'][0]['version'], 'git_url' => gh_url, 'latest_gh_tag' => gh_tag }
             }
           end
         end

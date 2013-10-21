@@ -123,24 +123,46 @@ class Chef
 
           def get_repos(org)
             dns_name  = get_dns_name(@github_url)
-            file_cache = "#{ENV['HOME']}/.chef/.#{dns_name.downcase}_#{org.downcase}.cache" 
-            if File.exists?(file_cache)
-              Chef::Log.debug("#{org} cache is created: " + (Time.now - File.ctime(file_cache)).to_i.to_s  + " seconds ago.")
-              if Time.now - File.ctime(file_cache) > @github_cache
+            file_cache = "#{ENV['HOME']}/.chef/.#{dns_name.downcase}_#{org.downcase}" 
+
+            if File.exists?(file_cache + ".json")
+              json =  JSON.parse(File.read(file_cache + ".json"))
+              json_updated = Time.parse(json['updated_at'])
+              Chef::Log.info("#{org} - cache created at : " + json_updated.to_s)
+              repo_updated = get_org_updated_time(org)
+              Chef::Log.info("#{org} - repos updated at : " + repo_updated.to_s)
+        
+	      unless json_updated >= repo_updated 
                 # update cache file
-                create_cache_file(file_cache, org)
+                create_cache_file(file_cache + ".cache", org)
+                create_cache_json(file_cache + ".json", org)
               end
             else
-              create_cache_file(file_cache, org)
+              create_cache_file(file_cache + ".cache", org)
+              create_cache_json(file_cache + ".json", org)
             end
+            
             # use cache files
-            JSON.parse(File.read(file_cache))
+            JSON.parse(File.read(file_cache + ".cache"))
           end
 
-          def create_cache_file(file_cache, org)
-            Chef::Log.debug("Updating the cache file: #{file_cache}")
+          def create_cache_json(file, org)
+            Chef::Log.debug("Updating the cache file: #{file}")
+            url  = @github_url + "/api/" + @github_api_version + "/orgs/" + org
+            result = send_request(url)
+            File.open(file, 'w') { |f| f.write(JSON.pretty_generate(result)) }
+          end
+
+          def create_cache_file(file, org)
+            Chef::Log.debug("Updating the cache file: #{file}")
             result = get_repos_github(org)
-            File.open(file_cache, 'w') { |file| file.write(JSON.pretty_generate(result)) }
+            File.open(file, 'w') { |f| f.write(JSON.pretty_generate(result)) }
+          end
+         
+          def get_org_updated_time(org)
+            url  = @github_url + "/api/" + @github_api_version + "/orgs/" + org
+            result = send_request(url)
+            Time.parse(result['updated_at'])
           end
 
           def get_repos_github(org)
@@ -209,6 +231,7 @@ class Chef
             end
 
             github_url = "#{url}?#{data}" 
+            Chef::Log.debug("URL: " + github_url.to_s)
 
             uri = URI.parse(github_url)
             req_body = Net::HTTP::Get.new(uri.request_uri)

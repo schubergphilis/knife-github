@@ -25,8 +25,8 @@ class Chef
 
       deps do
         require 'chef/knife/github_base'
-
         include Chef::Knife::GithubBase
+        require 'chef/mixin/shell_out'
       end
       
       banner "knife github download COOKBOOK (options)"
@@ -46,6 +46,9 @@ class Chef
 
       def run
 
+        #executing shell commands
+	extend Chef::Mixin::ShellOut
+
         # validate base options from base module.
         validate_base_options      
 
@@ -53,80 +56,65 @@ class Chef
         display_debug_info
 
         # Gather all repo information from github.
-        get_all_repos = get_all_repos(@github_organizations.reverse)
+        all_repos = get_all_repos(@github_organizations.reverse)
 
         # Get all chef cookbooks and versions (hopefully chef does the error handeling).
         cookbooks = rest.get_rest("/cookbooks?num_version=1")
 
-        # Get the github link
-        git_link = get_github_link(@github_link)
-    
-        # Filter all repo information based on the tags that we can find
-        #all_repos = {}
-        #if config[:all]
-        #  get_all_repos.each { |k,v|
-        #    cookbook = k
-        #    cookbooks[k].nil? || cookbooks[k]['versions'].nil? ? version = "" : version = cookbooks[k]['versions'][0]['version']
-        #    gh_url = v["#{git_link}"]
-        #    gh_tag  = v['latest_tag']
-        #    all_repos[cookbook] = { 'name' => cookbook, 'latest_cb_tag' => version, 'git_url' => gh_url, 'latest_gh_tag' => gh_tag }
-        #  } 
-        #else
-        #  cookbooks.each { |k,v|
-        #    cookbook = k
-        #    version  = v['versions'][0]['version']
-        #    get_all_repos[k].nil? || get_all_repos[k]["#{git_link}"].nil? ? gh_url = ui.color("ERROR: Cannot find cookbook!", :red) : gh_url = get_all_repos[k]["#{git_link}"]
-        #    get_all_repos[k].nil? || get_all_repos[k]['latest_tag'].nil? ? gh_tag = ui.color("ERROR: No tags!", :red) : gh_tag = get_all_repos[k]['latest_tag']
-        #    all_repos[cookbook] = { 'name' => cookbook, 'latest_cb_tag' => version, 'git_url' => gh_url, 'latest_gh_tag' => gh_tag } 
-        #  }
-        #end
-
         # Get the cookbook names from the command line
         @cookbook_name = name_args.first unless name_args.empty?
         if @cookbook_name
-          repo = get_all_repos.select { |k,v| v["name"] == @cookbook_name }
+          repo = all_repos.select { |k,v| v["name"] == @cookbook_name }
+          cookbook_download(repo, @cookbook_name)
+        elsif config[:all]
+          cookbooks.each do |c,v|
+            cookbook_download(all_repos, c)
+          end
         else
-          #repos = all_repos 
           Chef::Log.error("Please specify a cookbook name")
-          exit 1
         end
-        
-        if repo.nil?
-          Chef::Log.error("Cannot find the repository: #{} within github")
-          exit 1
+      end
+
+      def cookbook_download(repo, cookbook)
+        if repo.nil? || repo.empty?
+          ui.info("Processing [ ????? ] #{cookbook}")
+          Chef::Log.info("Cannot find the repository: #{cookbook} within github")
+          return nil
         end
 
-        github_link = get_github_link(repo[@cookbook_name])
-        if github_link.nil? || github_link.empty?
-          Chef::Log.error("Cannot find the link for the repository with the name: #{@cookbook_name}")
-          exit 1
+        repo_link = get_repo_clone_link()
+        if repo[cookbook].nil? || repo[cookbook][repo_link].nil? || repo[cookbook][repo_link].empty?
+          ui.info("Processing [ ????? ] #{cookbook}")
+          Chef::Log.info("Cannot find the link for the repository with the name: #{cookbook}")
+          return nil
         end
 
-        cookbook_path = cookbook_path_valid?(@cookbook_name)
-        if cookbook_path.nil?
-          exit 1
-        else
-          Chef::Log.debug("Downloading cookbook to: #{cookbook_path} ")
+ 	github_url = repo[cookbook][repo_link]
+        cookbook_path = cookbook_path_valid?(cookbook)
+        unless cookbook_path.nil?
+          ui.info("Processing [ clone ] #{cookbook}")
+          Chef::Log.info("Cloning repository to: #{cookbook_path}")
+          shell_out!("git clone #{github_url} #{cookbook_path}") 
         end
-
       end
   
       def cookbook_path_valid?(cookbook_name)
         cookbook_path = config[:cookbook_path] || Chef::Config[:cookbook_path]
         if cookbook_path.nil? || cookbook_path.empty?
           Chef::Log.error("Please specify a cookbook path")
-          return nil
+          exit 1
         end
 
         unless File.exists?(cookbook_path.first) && File.directory?(cookbook_path.first)
           Chef::Log.error("Cannot find the directory: #{cookbook_path.first}")
-          return nil
+          exit 1
         end
 
-        cookbook_path = File.join(cookbook_path.first,@cookbook_name)
-
+        cookbook_path = File.join(cookbook_path.first,cookbook_name)
         if File.exists?(cookbook_path)
-          Chef::Log.error("Path to #{cookbook_path} already exist.")
+          ui.info("Processing [ pull  ] #{cookbook_name}")
+          Chef::Log.info("Path to #{cookbook_path} already exists, executing pull.")
+          shell_out!("git pull", :cwd => cookbook_path)
           return nil
         end
         return cookbook_path

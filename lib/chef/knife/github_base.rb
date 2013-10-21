@@ -248,6 +248,21 @@ class Chef
             json = JSON.parse(response.body)
           end
 
+          def get_clone(url, cookbook)
+              if ! File.directory? @github_tmp
+                 Dir.mkdir("#{@github_tmp}")
+              end
+              Dir.mkdir("#{@github_tmp}/git")
+              output = `git clone #{url} #{@github_tmp}/git/#{cookbook} 2>&1`
+              if $?.exitstatus != 0
+                 Chef::Log.error("Could not clone the repository for: #{cookbook}")
+                 FileUtils.remove_entry(@github_tmp)
+                 exit 1
+              end
+              return true
+          end
+
+
         end
       end
     end

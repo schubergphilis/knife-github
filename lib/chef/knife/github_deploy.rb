@@ -38,7 +38,7 @@ class Chef
         include Chef::Knife::GithubBase
       end
       
-      banner "knife github deploy COOKBOOK [version] (options)"
+      banner "knife github deploy COOKBOOK VERSION (options)"
       category "github"
 
       def run
@@ -49,14 +49,97 @@ class Chef
         # Display information if debug mode is on.
         display_debug_info
 
-        # Step 1 collect the information from the user
-        #        Which github repo/org must we use
         # Gather all repo information from github.
         get_all_repos = get_all_repos(@github_organizations.reverse)
-        pp get_all_repos
+
+        # Get all chef cookbooks and versions (hopefully chef does the error handeling).
+        cookbooks = rest.get_rest("/cookbooks?num_version=1")
+
+        @versions = []
+        @cookbook_name = name_args.first unless name_args.empty?
+        cookbook_version = name_args[1] unless name_args[1].nil?
+
+        # Could build a selector based upon what is in github but that seems
+        # a little circular ....
+        if ! cookbook_version
+          Chef::Log.error("You must specify a version to be able to deploy")
+          exit 1
+        end
+
+        if @cookbook_name
+          repo = get_all_repos.select { |k,v| v["name"] == @cookbook_name }
+        else
+          Chef::Log.error("Please specify a cookbook name")
+          exit 1
+        end
+        if repo.nil?
+          Chef::Log.error("Cannot find the repository: #{} within github")
+          exit 1
+        end
+        if repo[@cookbook_name]['tags'].select { |k| k['name'] == cookbook_version }.empty?
+            # TODO:  Option to Create the tag
+            Chef::Log.error("Version #{@cookbook_name} for Cookbook #{@cookbook_name} is not tagged in github")
+            exit 1
+        end
+
+        github_link = get_github_link(repo[@cookbook_name])
+        if github_link.nil? || github_link.empty?
+          Chef::Log.error("Cannot find the github link for the repository with the name: #{@cookbook_name}")
+          exit 1
+        end
+		get_clone(github_link, @cookbook_name)
+        # Now try and check the tag out - moan if that is not possible
+        checkout_tag(cookbook_version)
+
+        github_version = get_cookbook_version()
+        get_cookbook_chef_versions()
+
+        if @versions.include?(github_version)
+           # TODO Add function to auto up the version?
+           Chef::Log.error("Version #{@github_version} of Cookbook #{@cookbook_name} is already in Chef")
+           Chef::Log.error("Please change the version in metadata.rb and try again")
+           exit 1
+        end
+        FileUtils.remove_entry(@github_tmp)
+        # If we have gotten this far we can just upload the cookbook
 
       end
 
+      def checkout_tag(version)
+          Dir.chdir("#{@github_tmp}/git/#{@cookbook_name}")
+		  `git checkout -b #{version}`
+		  if !$?.exitstatus == 0
+		     ui.error("Failed to checkout branch #{version} of #{@cookbook_name}")
+		     exit 1
+          end
+          # Git meuk should not be uploaded
+          FileUtils.remove_entry("#{@github_tmp}/git/#{name}/.git")
+      end
+
+      def get_cookbook_chef_versions ()
+          cookbooks = rest.get_rest("/cookbooks/#{@cookbook_name}?num_version=all")
+          cookbooks[@cookbook_name]['versions'].each do |v|
+              @versions.push v['version']
+          end
+      end
+
+      # ---------------------------------------------------------------------- #
+      # Get the version number in the git version of the cookbook
+      # ---------------------------------------------------------------------- #
+      def get_cookbook_version()
+          version = nil
+          File.foreach("#{@github_tmp}/git/#{@cookbook_name}/metadata.rb") do |line|
+              if line =~ /version.*"(.*)"/i
+                 version = $1
+                 break
+              end
+          end
+          if version.nil?
+             Chef::Log.error("Cannot get the version for cookbook #{@cookbook_name} in github")
+             exit 1
+          end
+          version
+      end
 
     end
   end

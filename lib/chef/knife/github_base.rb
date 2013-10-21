@@ -52,10 +52,6 @@ class Chef
                  :description => "SSL verify mode: verify_peer, verify_none (default: verify_peer)",
                  :boolean => true
 
-          option :github_cache,
-                 :long => "--github_cache MIN",
-                 :description => "Max life-time for local cache files in minutes (default: 900)"
-
           option :github_tmp,
                  :long => "--github_tmp PATH",
                  :description => "A path where temporary files for the diff function will be made default: /tmp/gitdiff)"
@@ -72,7 +68,6 @@ class Chef
 
             @github_url             = locate_config_value("github_url")
             @github_organizations   = locate_config_value("github_organizations")
-            @github_cache           = (locate_config_value("github_cache") || 900).to_i
             @github_link            = locate_config_value("github_link") || 'ssh'
             @github_api_version     = locate_config_value("github_api_version") || 'v3'
             @github_ssl_verify_mode = locate_config_value("github_ssl_verify_mode") || 'verify_peer'
@@ -85,7 +80,6 @@ class Chef
             Chef::Log.debug("github_org: " + @github_organizations.to_s)
             Chef::Log.debug("github_api: " + @github_api_version.to_s)
             Chef::Log.debug("github_link: " + @github_link.to_s)
-            Chef::Log.debug("github_cache: " + @github_cache.to_s)
             Chef::Log.debug("github_ssl_mode: " + @github_ssl_verify_mode.to_s)
           end
 

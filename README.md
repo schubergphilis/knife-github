@@ -12,7 +12,6 @@ You can configure the following attributes within your knife.rb
     knife[:github_organizations]   = [ 'customer-cookbooks', 'central-cookbooks' ] 
     knife[:github_link]            = 'ssh' 
     knife[:github_api_version]     = 'v3'  
-    knife[:github_cache]           = 900  
     knife[:github_ssl_verify_mode] = 'verify_none'
 
 ###### github_url
@@ -30,12 +29,15 @@ Options are <tt>ssh</tt> <tt>git</tt> <tt>http</tt> <tt>https</tt> <tt>svn</tt>
 ###### github_api_version \<optional\>
 The current and default version of the api is <tt>v3</tt> but this will allow you to target older versions if needed.
 
-###### github_cache \<optional\>
-This will be the lifetime of the cache files in seconds, default: <tt>900</tt>   
-Cache files will be created into the: ~/.chef directory.  
-We use cache files to offload the api calls and increase the performance for additional executions.
-
 ###### github_ssl_verify_mode \<optional\>
 The plugin is using the underlying knife http implementation, hence it will have the same options to handle ssl.  
-Currently the options are: <tt>verify_peer</tt> <tt>verify_none</tt> 
+Currently the options are: <tt>verify_peer</tt> <tt>verify_none</tt>   
+
+Other
+=====
+
+Cache files will be created into the: ~/.chef directory.
+We use cache files to offload the api calls and increase the performance for additional executions.  
+Updated to any repo inside the organization will cause the cache files to update.  
+But in case of any problems, the cache files can be safely deleted.
 

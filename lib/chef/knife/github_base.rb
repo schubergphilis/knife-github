@@ -94,6 +94,20 @@ class Chef
             config[key] || Chef::Config[:knife][key]
           end
 
+          def  get_repo_clone_link
+            link = locate_config_value('github_link')
+            repo_link = case link
+              when 'ssh' then 'ssh_url'
+              when 'http' then 'clone_url'
+              when 'https' then 'clone_url'
+              when 'svn' then 'svn_url'
+              when 'html' then 'html_url'
+              when 'git' then 'git_url'
+              else 'ssh_url'
+            end
+            return repo_link
+          end
+
           def get_github_link(object)
             link = locate_config_value('github_link')
             git_link = case link

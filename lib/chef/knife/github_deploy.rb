@@ -76,11 +76,6 @@ class Chef
           Chef::Log.error("Cannot find the repository: #{} within github")
           exit 1
         end
-        if repo[@cookbook_name]['tags'].select { |k| k['name'] == cookbook_version }.empty?
-            # TODO:  Option to Create the tag
-            Chef::Log.error("Version #{@cookbook_name} for Cookbook #{@cookbook_name} is not tagged in github")
-            exit 1
-        end
 
         github_link = get_github_link(repo[@cookbook_name])
         if github_link.nil? || github_link.empty?
@@ -93,16 +88,36 @@ class Chef
 
         github_version = get_cookbook_version()
         get_cookbook_chef_versions()
-
-        if @versions.include?(github_version)
-           # TODO Add function to auto up the version?
-           Chef::Log.error("Version #{@github_version} of Cookbook #{@cookbook_name} is already in Chef")
-           Chef::Log.error("Please change the version in metadata.rb and try again")
-           exit 1
+        while true
+            do
+                if @versions.include?(cookbook_version)
+                   ui.info("Version #{cookbook_version} is already in chef")
+                   ui.confirm("Shall I change the version (No to Cancel)")
+                end
         end
-        FileUtils.remove_entry(@github_tmp)
-        # If we have gotten this far we can just upload the cookbook
 
+        if repo[@cookbook_name]['tags'].select { |k| k['name'] == cookbook_version }.empty?
+            # TODO:  Option to Create the tag
+            Chef::Log.error("Version #{@cookbook_name} for Cookbook #{@cookbook_name} is not tagged in github")
+            exit 1
+        end
+
+
+        # If we have gotten this far we can just upload the cookbook
+        cookbook_upload()
+        FileUtils.remove_entry(@github_tmp)
+
+      end
+
+      def choose_version()
+      end
+      def cookbook_upload() 
+          ui.info "Upload Cookbook to Chef server"
+		  args = ['cookbook', 'upload',  @cookbook_name ]
+          upload = Chef::Knife::CookbookDownload.new(args)
+          upload.config[:cookbook_path] = "#{@github_tmp}/git"
+          # plugin will throw its own errors
+          upload.run
       end
 
       def checkout_tag(version)
@@ -113,7 +128,7 @@ class Chef
 		     exit 1
           end
           # Git meuk should not be uploaded
-          FileUtils.remove_entry("#{@github_tmp}/git/#{name}/.git")
+          FileUtils.remove_entry("#{@github_tmp}/git/#{@cookbook_name}/.git")
       end
 
       def get_cookbook_chef_versions ()

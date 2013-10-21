@@ -73,12 +73,7 @@ class Chef
           Chef::Log.error("Cannot find the link for the repository with the name: #{@cookbook_name}")
           exit 1
         end
-        Dir.mkdir(@github_tmp)
-		if ! get_clone(github_link, @cookbook_name)
-          Chef::Log.error("Could not clone the repository for: #{@cookbook_name}")
-          FileUtils.remove_entry(@github_tmp)
-          exit 1
-        end
+		get_clone(github_link, @cookbook_name)
 		version = get_cookbook_copy(@cookbook_name, cookbook_version)
 		do_diff(@cookbook_name, version)
         FileUtils.remove_entry(@github_tmp)
@@ -125,15 +120,6 @@ class Chef
 		  end
 		  return version
 	  end 
-
-      def get_clone(url, cookbook)
-        Dir.mkdir("#{@github_tmp}/git")
-        output = `git clone #{url} #{@github_tmp}/git/#{cookbook} 2>&1`
-		if $?.exitstatus != 0
-			return false
-		end
-		return true
-      end 
 
     end
   end

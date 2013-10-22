@@ -272,13 +272,15 @@ class Chef
           end
 
           def do_commit(version)
-              output = `git commit -a "Deploy #{version}" 2>&1`
+              Dir.chdir("#{@github_tmp}/git/#{@cookbook_name}")
+              output = `git commit -a -m "Deploy #{version}" 2>&1`
               if $?.exitstatus != 0
                  Chef::Log.error("Could not commit #{@cookbook_name}")
-                 FileUtils.remove_entry(@github_tmp)
+                 #FileUtils.remove_entry(@github_tmp)
+                 puts output
                  exit 1
               end
-              output = `git push --tags" 2>&1`
+              output = `git push --tags 2>&1`
               if $?.exitstatus != 0
                  Chef::Log.error("Could not push tag for: #{@cookbook_name}")
                  FileUtils.remove_entry(@github_tmp)

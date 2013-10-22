@@ -88,8 +88,7 @@ class Chef
 
         github_version = get_cookbook_version()
         get_cookbook_chef_versions()
-        while true
-            do
+        while true do
                 if @versions.include?(cookbook_version)
                    ui.info("Version #{cookbook_version} is already in chef")
                    ui.confirm("Shall I change the version (No to Cancel)")

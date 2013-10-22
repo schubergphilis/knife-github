@@ -79,15 +79,20 @@ module KnifeGithubCleanup
         if File.exists?(cookbook)
           if repo_status_clean?(cookbook)
             # delete the repo
-            puts "here we delete everything :P"
+            ui.info("Processing [D] #{cookbook}")
           end
+        else
+          puts "cannot find repo path: #{cookbook}" unless config[:all]
         end
       end
 
       def repo_status_clean?(repo)
         shell_out!("git fetch", :cwd => repo)
-        shell("git status", :cwd => repo)
-        return true
+        result = shell_out!("git status", :cwd => repo)
+        return true if result.stdout == "# On branch master\nnothing to commit (working directory clean)\n" 
+        ui.info("Processing [?] #{repo}")
+        puts result.stdout
+        false
       end
 
 

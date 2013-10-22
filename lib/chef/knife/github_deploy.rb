@@ -34,12 +34,41 @@ class Chef
     class GithubDeploy < Knife
       deps do
         require 'chef/knife/github_base'
-
         include Chef::Knife::GithubBase
+        require 'chef/cookbook_loader'
+        require 'chef/cookbook_uploader'
       end
       
-      banner "knife github deploy COOKBOOK VERSION (options)"
+      banner "knife github deploy COOKBOOK [VERSION] (options)"
       category "github"
+
+      option :final,
+             :short => "-f",
+             :long => "--final",
+             :description => "Bump version, make git tag and freeze",
+             :boolean => true,
+             :default => false
+
+      option :major,
+             :short => "-M",
+             :long => "--major",
+             :description => "In final mode, increase the major version ie. X.x.x",
+             :boolean => true,
+             :default => false
+
+      option :minor,
+             :short => "-m",
+             :long => "--minor",
+             :description => "In final mode, increase the minor version ie. x.X.x",
+             :boolean => true,
+             :default => false
+
+      option :patch,
+             :short => "-p",
+             :long => "--patch",
+             :description => "In final mode, increase the minor version ie. x.x.X (Default)",
+             :boolean => true,
+             :default => true
 
       def run
 
@@ -59,48 +88,76 @@ class Chef
         @cookbook_name = name_args.first unless name_args.empty?
         cookbook_version = name_args[1] unless name_args[1].nil?
 
-        # Could build a selector based upon what is in github but that seems
-        # a little circular ....
-        if ! cookbook_version
-          Chef::Log.error("You must specify a version to be able to deploy")
-          exit 1
-        end
-
         if @cookbook_name
           repo = get_all_repos.select { |k,v| v["name"] == @cookbook_name }
         else
           Chef::Log.error("Please specify a cookbook name")
           exit 1
         end
+
         if repo.nil?
           Chef::Log.error("Cannot find the repository: #{} within github")
           exit 1
         end
 
+        # We could also interrogate the metadata.rb in the master version to get this
+        # That would mean making this check much later on in the code
+        if ! cookbook_version && get_all_repos[@cookbook_name]['latest_tag'].nil?
+          Chef::Log.error("I cannot determine the latest version")
+          Chef::Log.error("You must specify a version to be able to deploy")
+          exit 1
+        elsif ! cookbook_version
+            cookbook_version = get_all_repos[@cookbook_name]['latest_tag']
+            ui.info "Using " << get_all_repos[@cookbook_name]['latest_tag'] << " as version"
+        end
         github_link = get_github_link(repo[@cookbook_name])
         if github_link.nil? || github_link.empty?
           Chef::Log.error("Cannot find the github link for the repository with the name: #{@cookbook_name}")
           exit 1
         end
-		get_clone(github_link, @cookbook_name)
-        # Now try and check the tag out - moan if that is not possible
-        checkout_tag(cookbook_version)
 
-        github_version = get_cookbook_version()
-        get_cookbook_chef_versions()
-        while true do
-                if @versions.include?(cookbook_version)
-                   ui.info("Version #{cookbook_version} is already in chef")
-                   ui.confirm("Shall I change the version (No to Cancel)")
-                end
+        inChef = true
+        isFrozen = false
+        if (config[:major] || config[:minor])
+            config[:patch] = false
         end
 
-        if repo[@cookbook_name]['tags'].select { |k| k['name'] == cookbook_version }.empty?
-            # TODO:  Option to Create the tag
-            Chef::Log.error("Version #{@cookbook_name} for Cookbook #{@cookbook_name} is not tagged in github")
+        begin
+            isFrozen = rest.get_rest("cookbooks/#{@cookbook_name}/#{cookbook_version}").frozen_version?
+        rescue
+            ui.warn "#{@cookbook_name} is not yet in chef"
+            inChef = false
+        end
+        if !config[:final] && isFrozen
+            ui.fatal "Cookbook is frozen, you must use final mode to update it"
             exit 1
+        elsif config[:final]
+            ui.info "Using Final mode"
+        else
+            ui.info "Using Quick mode"
         end
 
+		get_clone(github_link, @cookbook_name)
+
+        # Might be first upload so need to catch that cookbook does not exist!
+        get_cookbook_chef_versions()  unless ! inChef
+
+        ui.info "Cookbook is frozen" if isFrozen
+        if config[:final]
+            cookbook_version = up_version(cookbook_version)
+
+            if repo[@cookbook_name]['tags'].select { |k| k['name'] == cookbook_version }.empty?
+                ui.info("Cookbook #{cookbook_version} has no tag in Git")
+                ui.confirm("Shall I add a tag for you?")
+                set_cookbook_version(cookbook_version)
+                add_tag(cookbook_version)
+            else
+                checkout_tag(cookbook_version)
+                set_cookbook_version(cookbook_version)
+            end
+
+            do_commit(cookbook_version)
+        end
 
         # If we have gotten this far we can just upload the cookbook
         cookbook_upload()
@@ -108,26 +165,58 @@ class Chef
 
       end
 
-      def choose_version()
+      def up_version(version)
+          changed = false
+          while true do
+                ui.info("Trying to deploy version #{version}")
+                if @versions.include?(version)
+                   ui.info("Version #{version} is already in chef")
+                   ui.confirm("Shall I change the version (No to Cancel)")
+                   version = choose_version(version)
+                   changed = true
+                else
+                   break
+                end
+          end
+          version
       end
+
+      def choose_version(version)
+          if version =~ /(\d+)\.(\d+)\.(\d+)/
+              major = $1
+              minor = $1
+              patch = $3
+              version = "#{$1}.#{$2}.#{minor}"
+              major = major.to_i + 1 if config[:major]
+              minor = minor.to_i + 1 if config[:minor]
+              patch = patch.to_i + 1 if config[:patch]
+              version = "#{major}.#{minor}.#{patch}"
+              Chef::Log.debug("New version is #{version}")
+          else
+             Chef::Log.error("Version is in a format I cannot auto auto-update")
+             exit 1
+          end
+          version
+      end
+
       def cookbook_upload() 
-          ui.info "Upload Cookbook to Chef server"
+          # Git meuk should not be uploaded
+          FileUtils.remove_entry("#{@github_tmp}/git/#{@cookbook_name}/.git")
 		  args = ['cookbook', 'upload',  @cookbook_name ]
-          upload = Chef::Knife::CookbookDownload.new(args)
+          upload = Chef::Knife::CookbookUpload.new(args)
           upload.config[:cookbook_path] = "#{@github_tmp}/git"
           # plugin will throw its own errors
           upload.run
       end
 
       def checkout_tag(version)
+          ui.info "Checking out tag #{version}"
           Dir.chdir("#{@github_tmp}/git/#{@cookbook_name}")
 		  `git checkout -b #{version}`
 		  if !$?.exitstatus == 0
 		     ui.error("Failed to checkout branch #{version} of #{@cookbook_name}")
 		     exit 1
           end
-          # Git meuk should not be uploaded
-          FileUtils.remove_entry("#{@github_tmp}/git/#{@cookbook_name}/.git")
       end
 
       def get_cookbook_chef_versions ()
@@ -153,6 +242,17 @@ class Chef
              exit 1
           end
           version
+      end
+
+      def set_cookbook_version(version)
+          return  unless get_cookbook_version() != version
+          contents = ''
+          File.foreach("#{@github_tmp}/git/#{@cookbook_name}/metadata.rb") do |line|
+              line.gsub!(/(version[\t\s]+)(.*)/i,"\\1 \"#{version}\"\n")
+              contents = contents << line
+          end
+          File.open("#{@github_tmp}/git/#{@cookbook_name}/metadata.rb", 'w') {|f| f.write(contents) }
+          return true
       end
 
     end

@@ -34,12 +34,19 @@ class Chef
     class GithubDeploy < Knife
       deps do
         require 'chef/knife/github_base'
-
         include Chef::Knife::GithubBase
+        require 'chef/cookbook_loader'
+        require 'chef/cookbook_uploader'
       end
       
       banner "knife github deploy COOKBOOK VERSION (options)"
       category "github"
+
+      option :quick,
+             :short => "-q",
+             :long => "--quick",
+             :description => "Use the current master, do not check versions or tags",
+             :boolean => false
 
       def run
 
@@ -76,31 +83,48 @@ class Chef
           Chef::Log.error("Cannot find the repository: #{} within github")
           exit 1
         end
-
         github_link = get_github_link(repo[@cookbook_name])
         if github_link.nil? || github_link.empty?
           Chef::Log.error("Cannot find the github link for the repository with the name: #{@cookbook_name}")
           exit 1
         end
-		get_clone(github_link, @cookbook_name)
-        # Now try and check the tag out - moan if that is not possible
-        checkout_tag(cookbook_version)
 
-        github_version = get_cookbook_version()
-        get_cookbook_chef_versions()
-        while true do
-                if @versions.include?(cookbook_version)
-                   ui.info("Version #{cookbook_version} is already in chef")
-                   ui.confirm("Shall I change the version (No to Cancel)")
-                end
+        inChef = true
+        isFrozen = true
+        begin
+            isFrozen = rest.get_rest("cookbooks/#{@cookbook_name}/#{cookbook_version}").frozen_version?
+        rescue
+            ui.warn "#{@cookbook_name} is not yet in chef"
+            inChef = false
         end
-
-        if repo[@cookbook_name]['tags'].select { |k| k['name'] == cookbook_version }.empty?
-            # TODO:  Option to Create the tag
-            Chef::Log.error("Version #{@cookbook_name} for Cookbook #{@cookbook_name} is not tagged in github")
+        if config[:quick] && isFrozen
+            ui.fatal "Quick mode cannot be used to replace a frozen cookbook"
             exit 1
+        elsif config[:quick]
+            ui.info "Using quick mode"
         end
 
+		get_clone(github_link, @cookbook_name)
+
+        # Might be first upload so need to catch that cookbook does not exist!
+        get_cookbook_chef_versions()
+
+        ui.info "Cookbook is frozen" if isFrozen
+        if ! config[:quick]
+            cookbook_version = up_version(cookbook_version)
+
+            if repo[@cookbook_name]['tags'].select { |k| k['name'] == cookbook_version }.empty?
+                ui.info("Cookbook #{cookbook_version} has no tag in Git")
+                ui.confirm("Shall I add a tag for you?")
+                set_cookbook_version(cookbook_version)
+                add_tag(cookbook_version)
+            else
+                checkout_tag(cookbook_version)
+                set_cookbook_version(cookbook_version)
+            end
+
+            do_commit(cookbook_version)
+        end
 
         # If we have gotten this far we can just upload the cookbook
         cookbook_upload()
@@ -108,18 +132,44 @@ class Chef
 
       end
 
-      def choose_version()
+      def up_version(version)
+          changed = false
+          while true do
+                ui.info("Trying to deploy version #{version}")
+                if @versions.include?(version)
+                   ui.info("Version #{version} is already in chef")
+                   ui.confirm("Shall I change the version (No to Cancel)")
+                   version = choose_version(version)
+                   changed = true
+                else
+                   break
+                end
+          end
+          version
       end
+
+      def choose_version(version)
+          if version =~ /(\d+)\.(\d+)\.(\d+)/
+              minor = $3.to_i + 1
+              version = "#{$1}.#{$2}.#{minor}"
+              Chef::Log.debug("New version is #{version}")
+          else
+             Chef::Log.error("Version is in a format I cannot auto auto-update")
+             exit 1
+          end
+          version
+      end
+
       def cookbook_upload() 
-          ui.info "Upload Cookbook to Chef server"
 		  args = ['cookbook', 'upload',  @cookbook_name ]
-          upload = Chef::Knife::CookbookDownload.new(args)
+          upload = Chef::Knife::CookbookUpload.new(args)
           upload.config[:cookbook_path] = "#{@github_tmp}/git"
           # plugin will throw its own errors
           upload.run
       end
 
       def checkout_tag(version)
+          ui.info "Checking out tag #{version}"
           Dir.chdir("#{@github_tmp}/git/#{@cookbook_name}")
 		  `git checkout -b #{version}`
 		  if !$?.exitstatus == 0
@@ -153,6 +203,17 @@ class Chef
              exit 1
           end
           version
+      end
+
+      def set_cookbook_version(version)
+          return  unless get_cookbook_version() != version
+          contents = ''
+          File.foreach("#{@github_tmp}/git/#{@cookbook_name}/metadata.rb") do |line|
+              line.gsub!(/(version[\t\s]+)(.*)/i,"\\1 #{version}\n")
+              contents = contents << line
+          end
+          File.open("#{@github_tmp}/git/#{@cookbook_name}/metadata.rb", 'w') {|f| f.write(contents) }
+          return true
       end
 
     end

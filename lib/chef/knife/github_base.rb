@@ -261,6 +261,7 @@ class Chef
                  Dir.mkdir("#{@github_tmp}")
               end
               Dir.mkdir("#{@github_tmp}/git")
+              ui.info("Getting #{@cookbook_name} from #{url}")
               output = `git clone #{url} #{@github_tmp}/git/#{cookbook} 2>&1`
               if $?.exitstatus != 0
                  Chef::Log.error("Could not clone the repository for: #{cookbook}")
@@ -270,6 +271,31 @@ class Chef
               return true
           end
 
+          def do_commit(version)
+              output = `git commit -a "Deploy #{version}" 2>&1`
+              if $?.exitstatus != 0
+                 Chef::Log.error("Could not commit #{@cookbook_name}")
+                 FileUtils.remove_entry(@github_tmp)
+                 exit 1
+              end
+              output = `git push --tags" 2>&1`
+              if $?.exitstatus != 0
+                 Chef::Log.error("Could not push tag for: #{@cookbook_name}")
+                 FileUtils.remove_entry(@github_tmp)
+                 exit 1
+              end
+          end
+
+          def add_tag(version)
+              Dir.chdir("#{@github_tmp}/git/#{@cookbook_name}")
+              Chef::Log.debug "Adding tag"
+              output = `git tag -a "#{version}" -m "Added tag #{version}" 2>&1`
+              if $?.exitstatus != 0
+                 Chef::Log.error("Could not add tag for: #{@cookbook_name}")
+                 FileUtils.remove_entry(@github_tmp)
+                 exit 1
+              end
+          end
 
         end
       end

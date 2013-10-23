@@ -65,26 +65,26 @@ class Chef
         @cookbook_name = name_args.first unless name_args.empty?
         if @cookbook_name
           repo = all_repos.select { |k,v| v["name"] == @cookbook_name }
-          cookbook_download(repo, @cookbook_name)
+          repo_download(repo, @cookbook_name)
         elsif config[:all]
           cookbooks.each do |c,v|
-            cookbook_download(all_repos, c)
+            repo_download(all_repos, c)
           end
         else
           Chef::Log.error("Please specify a cookbook name")
         end
       end
 
-      def cookbook_download(repo, cookbook)
+      def repo_download(repo, cookbook)
         if repo.nil? || repo.empty?
-          ui.info("Processing [ ????? ] #{cookbook}")
+          ui.info("Processing [?] #{cookbook}")
           Chef::Log.info("Cannot find the repository: #{cookbook} within github")
           return nil
         end
 
         repo_link = get_repo_clone_link()
         if repo[cookbook].nil? || repo[cookbook][repo_link].nil? || repo[cookbook][repo_link].empty?
-          ui.info("Processing [ ????? ] #{cookbook}")
+          ui.info("Processing [?] #{cookbook}")
           Chef::Log.info("Cannot find the link for the repository with the name: #{cookbook}")
           return nil
         end
@@ -92,7 +92,7 @@ class Chef
  	github_url = repo[cookbook][repo_link]
         cookbook_path = cookbook_path_valid?(cookbook)
         unless cookbook_path.nil?
-          ui.info("Processing [ clone ] #{cookbook}")
+          ui.info("Processing [C] #{cookbook}")
           Chef::Log.info("Cloning repository to: #{cookbook_path}")
           shell_out!("git clone #{github_url} #{cookbook_path}") 
         end
@@ -112,9 +112,8 @@ class Chef
 
         cookbook_path = File.join(cookbook_path.first,cookbook_name)
         if File.exists?(cookbook_path)
-          ui.info("Processing [ pull  ] #{cookbook_name}")
-          Chef::Log.info("Path to #{cookbook_path} already exists, executing pull.")
-          shell_out!("git pull", :cwd => cookbook_path)
+          ui.info("Processing [S] #{cookbook_name}")
+          Chef::Log.info("Path to #{cookbook_path} already exists, skipping.")
           return nil
         end
         return cookbook_path

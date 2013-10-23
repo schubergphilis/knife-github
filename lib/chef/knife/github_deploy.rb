@@ -23,8 +23,35 @@
 # This version should match the cookbook version (from the metadata)
 # This version is then pinned against specific environments
 #
-# This class expects you to have committed all your changes to github
+# This class expects you to have pushed all your changes to github
 # It will then do the rest
+#
+# There are two modes of operation
+# Development (default)
+#
+# This will take a cookbook name find it, clone it and upload it to your
+# chef server.
+#
+# If the cookbook is frozen it will force you to choose a new version
+# and update the metadata accordingly
+#
+# Final (-f)
+#
+# You will be forced to select a new version.
+# You can choose via the options whether to increment the Major/minor or patch
+# revision numbers
+# The version will be tagged
+# Uploaded to the Chef server and frozen
+#
+# Version numbers
+#
+# You can choose a specific version number by specifying it on the command
+# line.
+#
+# If you do not specify a version, the version of the last tag in github
+# will be used
+#
+# If there is no tag, a version number must be given on the command line
 # ---------------------------------------------------------------------------- #
 require 'chef/knife'
 

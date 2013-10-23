@@ -63,7 +63,7 @@ class Chef
           exit 1
         end
         
-        if repo.nil?
+        if repo.empty?
           Chef::Log.error("Cannot find the repository: #{} within github")
           exit 1
         end

@@ -85,6 +85,7 @@ class Chef
         cookbooks = rest.get_rest("/cookbooks?num_version=1")
 
         @versions = []
+        cookbook_version = nil
         @cookbook_name = name_args.first unless name_args.empty?
         cookbook_version = name_args[1] unless name_args[1].nil?
 
@@ -95,8 +96,8 @@ class Chef
           exit 1
         end
 
-        if repo.nil?
-          Chef::Log.error("Cannot find the repository: #{} within github")
+        if repo.empty?
+          Chef::Log.error("Cannot find the repository: #{@cookbook_name} within github")
           exit 1
         end
 
@@ -128,13 +129,12 @@ class Chef
             ui.warn "#{@cookbook_name} is not yet in chef"
             inChef = false
         end
-        if !config[:final] && isFrozen
-            ui.fatal "Cookbook is frozen, you must use final mode to update it"
-            exit 1
-        elsif config[:final]
+
+        
+        if config[:final]
             ui.info "Using Final mode"
         else
-            ui.info "Using Quick mode"
+            ui.info "Using Development mode"
         end
 
 		get_clone(github_link, @cookbook_name)
@@ -159,6 +159,14 @@ class Chef
             do_commit(cookbook_version)
         end
 
+        # In Dev mode the version of the cookbook does not need to change
+        # If however the cookbook is frozen, then the version has to change
+        if ! config[:final] && isFrozen
+            cookbook_version = up_version(cookbook_version)
+            set_cookbook_version(cookbook_version)
+            do_commit(cookbook_version)
+        end
+
         # If we have gotten this far we can just upload the cookbook
         cookbook_upload()
         FileUtils.remove_entry(@github_tmp)
@@ -166,14 +174,12 @@ class Chef
       end
 
       def up_version(version)
-          changed = false
           while true do
                 ui.info("Trying to deploy version #{version}")
                 if @versions.include?(version)
                    ui.info("Version #{version} is already in chef")
-                   ui.confirm("Shall I change the version (No to Cancel)")
+                   ui.confirm("Shall I bump the version (No to Cancel)")
                    version = choose_version(version)
-                   changed = true
                 else
                    break
                 end
@@ -183,15 +189,14 @@ class Chef
 
       def choose_version(version)
           if version =~ /(\d+)\.(\d+)\.(\d+)/
-              major = $1
-              minor = $1
-              patch = $3
-              version = "#{$1}.#{$2}.#{minor}"
-              major = major.to_i + 1 if config[:major]
-              minor = minor.to_i + 1 if config[:minor]
-              patch = patch.to_i + 1 if config[:patch]
-              version = "#{major}.#{minor}.#{patch}"
-              Chef::Log.debug("New version is #{version}")
+             major = $1
+             minor = $1
+             patch = $3
+             major = major.to_i + 1 if config[:major]
+             minor = minor.to_i + 1 if config[:minor]
+             patch = patch.to_i + 1 if config[:patch]
+             version = "#{major}.#{minor}.#{patch}"
+             Chef::Log.debug("New version is #{version}")
           else
              Chef::Log.error("Version is in a format I cannot auto auto-update")
              exit 1
@@ -203,6 +208,9 @@ class Chef
           # Git meuk should not be uploaded
           FileUtils.remove_entry("#{@github_tmp}/git/#{@cookbook_name}/.git")
 		  args = ['cookbook', 'upload',  @cookbook_name ]
+          if config[:final]
+              args.push "--freeze"
+          end
           upload = Chef::Knife::CookbookUpload.new(args)
           upload.config[:cookbook_path] = "#{@github_tmp}/git"
           # plugin will throw its own errors

@@ -57,7 +57,7 @@ module KnifeGithubSearch
       result = github_search_repos(query)
 
       if config[:link]
-        columns = [ 'score,Score', 'name,Name', "html_url,Link" ]
+        columns = [ 'score,Score', 'name,Name', "url,URL" ]
       else
         columns = [ 'score,Score', 'name,Name', 'description,Description' ]
       end

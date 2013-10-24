@@ -57,16 +57,16 @@ module KnifeGithubSearch
       result = github_search_repos(query)
 
       if config[:link]
-        columns = [ 'score,Score', 'full_name,Full Name', "html_url,Link" ]
+        columns = [ 'score,Score', 'name,Name', "html_url,Link" ]
       else
-        columns = [ 'score,Score', 'full_name,Full Name', 'description,Description' ]
+        columns = [ 'score,Score', 'name,Name', 'description,Description' ]
       end
 
-      if result['total_count'] == 0
+      if result['repositories'].nil? || result['repositories'].empty?
         Chef::Log.error("No results when searching for: " + query)
       else
         items = []
-        result['items'].each { |n| items << [ "#{n['id']}", n ] } 
+        result['repositories'].each { |n| items << [ "#{n['name']}", n ] } 
         display_info(items, columns )
       end
     end
@@ -83,7 +83,7 @@ module KnifeGithubSearch
       }
       options = params_arr.join('&')
 
-      url  = @github_url + "/api/" + @github_api_version + "/search/repositories?" + options
+      url  = @github_url + "/api/" + @github_api_version + "/legacy/repos/search/" + query
       Chef::Log.debug("URL: #{url}")
      
       send_request(url)

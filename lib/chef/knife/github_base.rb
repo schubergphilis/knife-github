@@ -17,6 +17,7 @@
 #
 
 # require 'chef/knife'
+require "knife-github/version"
 
 class Chef
   class Knife
@@ -56,6 +57,11 @@ class Chef
                  :long => "--github_tmp PATH",
                  :description => "A path where temporary files for the diff function will be made default: /tmp/gitdiff)"
 
+          option :github_no_update,
+                 :long => "--github_no_update",
+                 :description => "Turn github update checking off",
+                 :boolean => true
+ 
           def validate_base_options
             unless locate_config_value('github_url')
               ui.error "Github URL not specified"
@@ -65,6 +71,9 @@ class Chef
               ui.error "Github organization(s) not specified"
               exit 1
             end
+            unless locate_config_value('github_no_update')
+              check_gem_version
+            end
 
             @github_url             = locate_config_value("github_url")
             @github_organizations   = locate_config_value("github_organizations")
@@ -73,6 +82,23 @@ class Chef
             @github_ssl_verify_mode = locate_config_value("github_ssl_verify_mode") || 'verify_peer'
             @github_tmp             = locate_config_value("github_tmp") || '/var/tmp/gitdiff'
             @github_tmp             = "#{@github_tmp}#{Process.pid}"
+          end
+
+          def check_gem_version
+            url  = 'http://rubygems.org/api/v1/gems/knife-github.json'
+            result = `curl -L -s #{url}`
+            begin
+              json = JSON.parse(result)
+              webversion = Mixlib::Versioning.parse(json['version'])
+              thisversion = Mixlib::Versioning.parse(::Knife::Github::VERSION)
+              if webversion > thisversion
+                ui.info "New version of knife-github is available. Please update to the latest version!"
+              end 
+
+            rescue
+              ui.info "Cannot verify gem version information from rubygems.org"
+              ui.info "Turn off this message with --github_no_update or add knife[:github_no_update] = true to your configuration"
+            end
           end
 
           def display_debug_info
@@ -100,24 +126,6 @@ class Chef
               else 'ssh_url'
             end
             return repo_link
-          end
-
-          def get_github_link(object)
-            link = locate_config_value('github_link')
-            git_link = case link
-              when 'ssh' then 'ssh_url'
-              when 'http' then 'clone_url'
-              when 'https' then 'clone_url'
-              when 'svn' then 'svn_url'
-              when 'html' then 'html_url'
-              when 'git' then 'git_url'
-              else 'ssh_url'
-            end
-            if object.nil? || object.empty?
-              return git_link
-            else
-              return object[git_link]
-            end
           end
 
           def get_all_repos(orgs)
@@ -157,7 +165,8 @@ class Chef
           def create_cache_json(file, org)
             Chef::Log.debug("Updating the cache file: #{file}")
             url  = @github_url + "/api/" + @github_api_version + "/orgs/" + org
-            result = send_request(url)
+            params = {'response' => 'json'} 
+            result = send_request(url, params)
             File.open(file, 'w') { |f| f.write(JSON.pretty_generate(result)) }
           end
 
@@ -169,7 +178,8 @@ class Chef
          
           def get_org_updated_time(org)
             url  = @github_url + "/api/" + @github_api_version + "/orgs/" + org
-            result = send_request(url)
+            params = {'response' => 'json'}
+            result = send_request(url, params)
             Time.parse(result['updated_at'])
           end
 
@@ -179,7 +189,7 @@ class Chef
             page = 1
             url  = @github_url + "/api/" + @github_api_version + "/orgs/" + org + "/repos" 
             while true
-              params = { 'page' => page }
+              params = {'response' => 'json', 'page' => page }
               result = send_request(url, params)
               break if result.nil? || result.count < 1
               result.each { |key|
@@ -198,7 +208,8 @@ class Chef
           end
 
           def get_tags(repo)
-            tags = send_request(repo['tags_url'])
+            params = {'response' => 'json'}
+            tags = send_request(repo['tags_url'], params)
             tags
           end
 
@@ -219,17 +230,13 @@ class Chef
           end
 
           def send_request(url, params = {})
-            params['response'] = 'json'
-
-            params_arr = []
-            params.sort.each { |elem|
-              params_arr << elem[0].to_s + '=' + CGI.escape(elem[1].to_s).gsub('+', '%20').gsub(' ','%20')
-            }
-            data = params_arr.join('&')
-
-            if url.nil? || url.empty?
-              puts "Error: Please specify a valid Github URL."
-              exit 1
+            unless params.empty?
+              params_arr = []
+              params.sort.each { |elem|
+                params_arr << elem[0].to_s + '=' + CGI.escape(elem[1].to_s).gsub('+', '%20').gsub(' ','%20')
+              }
+              data = params_arr.join('&')
+              url = "#{url}?#{data}" 
             end
 
             if @github_ssl_verify_mode == "verify_none"
@@ -238,22 +245,29 @@ class Chef
               config[:ssl_verify_mode] = :verify_peer
             end
 
-            github_url = "#{url}?#{data}" 
-            Chef::Log.debug("URL: " + github_url.to_s)
+            Chef::Log.debug("URL: " + url.to_s)
 
-            uri = URI.parse(github_url)
+            uri = URI.parse(url)
             req_body = Net::HTTP::Get.new(uri.request_uri)
             request = Chef::REST::RESTRequest.new("GET", uri, req_body, headers={})
  
             response = request.call
           
-            if !response.is_a?(Net::HTTPOK) then
+            unless response.is_a?(Net::HTTPOK) then
               puts "Error #{response.code}: #{response.message}"
               puts JSON.pretty_generate(JSON.parse(response.body))
               puts "URL: #{url}"
               exit 1
             end
-            json = JSON.parse(response.body)
+
+            begin
+              json = JSON.parse(response.body)
+            rescue
+              ui.warn "The result on the RESTRequest is not in json format"
+              ui.warn "Output: " + response.body
+              exit 1
+            end
+            return json
           end
 
           def get_clone(url, cookbook)

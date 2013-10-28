@@ -72,16 +72,11 @@ module KnifeGithubSearch
     end
 
     def github_search_repos(query, params ={})
+      # once the new search function is available, we can use these params
       params['q'] = query
       params['sort'] = 'stars'
       params['order'] = 'desc'
-
-
-      params_arr = []
-      params.sort.each { |elem|
-        params_arr << elem[0].to_s + '=' + CGI.escape(elem[1].to_s).gsub('+', '%20').gsub(' ','%20')
-      }
-      options = params_arr.join('&')
+      params['response'] = 'json'
 
       url  = @github_url + "/api/" + @github_api_version + "/legacy/repos/search/" + query
       Chef::Log.debug("URL: #{url}")

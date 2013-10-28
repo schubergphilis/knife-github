@@ -26,11 +26,15 @@
 # This class expects you to have pushed all your changes to github
 # It will then do the rest
 #
+# All modes presume you have used github download to download a cookbook or
+# are creating a new cookbook
+#
 # There are two modes of operation
 # Development (default)
 #
-# This will take a cookbook name find it, clone it and upload it to your
-# chef server.
+# This will take a cookbook name
+# Do some basic version checks (if the current cookbook is frozen) and
+# upload it
 #
 # If the cookbook is frozen it will force you to choose a new version
 # and update the metadata accordingly
@@ -48,10 +52,10 @@
 # You can choose a specific version number by specifying it on the command
 # line.
 #
-# If you do not specify a version, the version of the last tag in github
-# will be used
+# If you do not specify a version, the version will be the version in your
+# cookbook's metadata
 #
-# If there is no tag, a version number must be given on the command line
+# A warning is issued if the version is lower than the version in github
 # ---------------------------------------------------------------------------- #
 require 'chef/knife'
 
@@ -119,29 +123,43 @@ class Chef
         if @cookbook_name
           repo = get_all_repos.select { |k,v| v["name"] == @cookbook_name }
         else
-          Chef::Log.error("Please specify a cookbook name")
+          Chef::Log.error("Cookbook not in git.  You must add it to git to use deploy")
           exit 1
         end
 
         if repo.empty?
-          Chef::Log.error("Cannot find the repository: #{@cookbook_name} within github")
+          Chef::Log.error("Cookbook not in git.  You must add it to git to use deploy")
           exit 1
         end
 
-        # We could also interrogate the metadata.rb in the master version to get this
-        # That would mean making this check much later on in the code
-        if ! cookbook_version && get_all_repos[@cookbook_name]['latest_tag'].nil?
-          Chef::Log.error("I cannot determine the latest version")
-          Chef::Log.error("You must specify a version to be able to deploy")
-          exit 1
-        elsif ! cookbook_version
-            cookbook_version = get_all_repos[@cookbook_name]['latest_tag']
-            ui.info "Using " << get_all_repos[@cookbook_name]['latest_tag'] << " as version"
-        end
         github_link = get_github_link(repo[@cookbook_name])
         if github_link.nil? || github_link.empty?
           Chef::Log.error("Cannot find the github link for the repository with the name: #{@cookbook_name}")
           exit 1
+        end
+
+        # is the cookbook in the cookbook_path?
+        if cookbook_path_valid?(@cookbook_name, false).nil?
+          Chef::Log.error("Cookbook is not in cookbook path")
+          ui.info("HINT:  knife github download #{@cookbook_name}")
+          exit 1
+        end
+
+        # ----------------------------- #
+        # The version can come
+        # 1.  From the command line
+        # 2.  From the cookbook
+        # ----------------------------- #
+        if cookbook_version.nil?
+           cookbook_version = get_cookbook_version()
+        end
+        # Next check to see if the version in git is way ahead
+        if ! get_all_repos[@cookbook_name]['latest_tag'].nil?
+            cb1 = Mixlib::Versioning.parse(cookbook_version)
+            cb2 = Mixlib::Versioning.parse(get_all_repos[@cookbook_name]['latest_tag'])
+            if(cb2 > cb1)
+                ui.confirm "Version in github #{cb2} is greater than the version you want to deploy #{cb1} - Continue"
+            end
         end
 
         inChef = true
@@ -160,16 +178,15 @@ class Chef
         
         if config[:final]
             ui.info "Using Final mode"
+
         else
             ui.info "Using Development mode"
         end
-
-		get_clone(github_link, @cookbook_name)
+        ui.info "Cookbook is frozen" if isFrozen
 
         # Might be first upload so need to catch that cookbook does not exist!
         get_cookbook_chef_versions()  unless ! inChef
 
-        ui.info "Cookbook is frozen" if isFrozen
         if config[:final]
             cookbook_version = up_version(cookbook_version)
 
@@ -183,7 +200,7 @@ class Chef
                 set_cookbook_version(cookbook_version)
             end
 
-            do_commit(cookbook_version)
+            do_commit(cookbook_version, true)
         end
 
         # In Dev mode the version of the cookbook does not need to change
@@ -191,12 +208,11 @@ class Chef
         if ! config[:final] && isFrozen
             cookbook_version = up_version(cookbook_version)
             set_cookbook_version(cookbook_version)
-            do_commit(cookbook_version)
+            do_commit(cookbook_version, false)
         end
 
         # If we have gotten this far we can just upload the cookbook
         cookbook_upload()
-        FileUtils.remove_entry(@github_tmp)
 
       end
 
@@ -232,21 +248,22 @@ class Chef
       end
 
       def cookbook_upload() 
-          # Git meuk should not be uploaded
-          FileUtils.remove_entry("#{@github_tmp}/git/#{@cookbook_name}/.git")
+          # Git meuk should not be uploaded use chefignore file instead
+          # FileUtils.remove_entry("#{@github_tmp}/git/#{@cookbook_name}/.git")
 		  args = ['cookbook', 'upload',  @cookbook_name ]
           if config[:final]
               args.push "--freeze"
           end
           upload = Chef::Knife::CookbookUpload.new(args)
-          upload.config[:cookbook_path] = "#{@github_tmp}/git"
+          #upload.config[:cookbook_path] = "#{@github_tmp}/git"
           # plugin will throw its own errors
           upload.run
       end
 
       def checkout_tag(version)
           ui.info "Checking out tag #{version}"
-          Dir.chdir("#{@github_tmp}/git/#{@cookbook_name}")
+          cpath = get_cookbook_path(@cookbook_name)
+          Dir.chdir(cpath);
 		  `git checkout -b #{version}`
 		  if !$?.exitstatus == 0
 		     ui.error("Failed to checkout branch #{version} of #{@cookbook_name}")
@@ -266,27 +283,56 @@ class Chef
       # ---------------------------------------------------------------------- #
       def get_cookbook_version()
           version = nil
-          File.foreach("#{@github_tmp}/git/#{@cookbook_name}/metadata.rb") do |line|
+          cpath = get_cookbook_path(@cookbook_name)
+          File.foreach("#{cpath}/metadata.rb") do |line|
               if line =~ /version.*"(.*)"/i
                  version = $1
                  break
               end
           end
           if version.nil?
-             Chef::Log.error("Cannot get the version for cookbook #{@cookbook_name} in github")
+             Chef::Log.error("Cannot get the version for cookbook #{@cookbook_name}")
              exit 1
           end
           version
       end
 
+      def get_cookbook_path(cookbook) 
+          return cookbook_path_valid?(cookbook, false)
+      end
+
+      def do_commit(version, push)
+          cpath = get_cookbook_path(@cookbook_name)
+          Dir.chdir("#{cpath}")
+          puts cpath
+          output = `git commit -a -m "Deploy #{version}" 2>&1`
+          if $?.exitstatus != 0
+             if output !~ /nothing to commit/
+                Chef::Log.error("Could not commit #{@cookbook_name}")
+                puts output
+                exit 1
+             end
+          end
+          if push
+              output = `git push --tags 2>&1`
+              if $?.exitstatus != 0
+                 Chef::Log.error("Could not push tag for: #{@cookbook_name}")
+                 exit 1
+              end
+              output = `git push 2>&1`
+          end
+      end
+
+
       def set_cookbook_version(version)
           return  unless get_cookbook_version() != version
           contents = ''
-          File.foreach("#{@github_tmp}/git/#{@cookbook_name}/metadata.rb") do |line|
+          cpath = get_cookbook_path(@cookbook_name)
+          File.foreach("#{cpath}/metadata.rb") do |line|
               line.gsub!(/(version[\t\s]+)(.*)/i,"\\1 \"#{version}\"\n")
               contents = contents << line
           end
-          File.open("#{@github_tmp}/git/#{@cookbook_name}/metadata.rb", 'w') {|f| f.write(contents) }
+          File.open("#{cpath}/metadata.rb", 'w') {|f| f.write(contents) }
           return true
       end
 

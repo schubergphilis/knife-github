@@ -271,25 +271,9 @@ class Chef
               return true
           end
 
-          def do_commit(version)
-              Dir.chdir("#{@github_tmp}/git/#{@cookbook_name}")
-              output = `git commit -a -m "Deploy #{version}" 2>&1`
-              if $?.exitstatus != 0
-                 Chef::Log.error("Could not commit #{@cookbook_name}")
-                 #FileUtils.remove_entry(@github_tmp)
-                 puts output
-                 exit 1
-              end
-              output = `git push --tags 2>&1`
-              if $?.exitstatus != 0
-                 Chef::Log.error("Could not push tag for: #{@cookbook_name}")
-                 FileUtils.remove_entry(@github_tmp)
-                 exit 1
-              end
-          end
-
           def add_tag(version)
-              Dir.chdir("#{@github_tmp}/git/#{@cookbook_name}")
+              cpath = cookbook_path_valid?(@cookbook_name, false)
+              Dir.chdir(cpath)
               Chef::Log.debug "Adding tag"
               output = `git tag -a "#{version}" -m "Added tag #{version}" 2>&1`
               if $?.exitstatus != 0
@@ -316,6 +300,10 @@ class Chef
                 if File.exists?(cookbook_path)
                   ui.info("Processing [S] #{cookbook_name}")
                   Chef::Log.info("Path to #{cookbook_path} already exists, skipping.")
+                  return nil
+                end
+            else
+                if ! File.exists?(cookbook_path)
                   return nil
                 end
             end

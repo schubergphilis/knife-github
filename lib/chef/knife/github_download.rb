@@ -90,7 +90,7 @@ class Chef
         end
 
  	github_url = repo[cookbook][repo_link]
-        cookbook_path = cookbook_path_valid?(cookbook)
+        cookbook_path = cookbook_path_valid?(cookbook, true)
         unless cookbook_path.nil?
           ui.info("Processing [C] #{cookbook}")
           Chef::Log.info("Cloning repository to: #{cookbook_path}")
@@ -98,26 +98,6 @@ class Chef
         end
       end
   
-      def cookbook_path_valid?(cookbook_name)
-        cookbook_path = config[:cookbook_path] || Chef::Config[:cookbook_path]
-        if cookbook_path.nil? || cookbook_path.empty?
-          Chef::Log.error("Please specify a cookbook path")
-          exit 1
-        end
-
-        unless File.exists?(cookbook_path.first) && File.directory?(cookbook_path.first)
-          Chef::Log.error("Cannot find the directory: #{cookbook_path.first}")
-          exit 1
-        end
-
-        cookbook_path = File.join(cookbook_path.first,cookbook_name)
-        if File.exists?(cookbook_path)
-          ui.info("Processing [S] #{cookbook_name}")
-          Chef::Log.info("Path to #{cookbook_path} already exists, skipping.")
-          return nil
-        end
-        return cookbook_path
-      end
 
     end
   end

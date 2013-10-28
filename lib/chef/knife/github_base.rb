@@ -92,21 +92,26 @@ class Chef
               webversion = Mixlib::Versioning.parse(json['version'])
               thisversion = Mixlib::Versioning.parse(::Knife::Github::VERSION)
               if webversion > thisversion
-                ui.info "New version of knife-github is available. Please update to the latest version!"
+                ui.info "INFO: New version (#{webversion.to_s}) of knife-github is available!"
+                ui.info "INFO: Turn off this message with --github_no_update or add knife[:github_no_update] = true to your configuration"
               end 
-
+              Chef::Log.debug("local_gem_version    : " + thisversion.to_s)
+              Chef::Log.debug("repo_gem_version     : " + webversion.to_s)
+              Chef::Log.debug("repo_downloads       : " + json['version_downloads'].to_s)
+              Chef::Log.debug("repo_total_downloads : " + json['downloads'].to_s)
+ 
             rescue
-              ui.info "Cannot verify gem version information from rubygems.org"
-              ui.info "Turn off this message with --github_no_update or add knife[:github_no_update] = true to your configuration"
+              ui.info "INFO: Cannot verify gem version information from rubygems.org"
+              ui.info "INFO: Turn off this message with --github_no_update or add knife[:github_no_update] = true to your configuration"
             end
           end
 
           def display_debug_info
-            Chef::Log.debug("github_url: " + @github_url.to_s)
-            Chef::Log.debug("github_org: " + @github_organizations.to_s)
-            Chef::Log.debug("github_api: " + @github_api_version.to_s)
-            Chef::Log.debug("github_link: " + @github_link.to_s)
-            Chef::Log.debug("github_ssl_mode: " + @github_ssl_verify_mode.to_s)
+            Chef::Log.debug("github_url           : " + @github_url.to_s)
+            Chef::Log.debug("github_org           : " + @github_organizations.to_s)
+            Chef::Log.debug("github_api           : " + @github_api_version.to_s)
+            Chef::Log.debug("github_link          : " + @github_link.to_s)
+            Chef::Log.debug("github_ssl_mode      : " + @github_ssl_verify_mode.to_s)
           end
 
           def locate_config_value(key)

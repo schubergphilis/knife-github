@@ -216,7 +216,8 @@ class Chef
                 ui.info("Trying to deploy version #{version}")
                 if @versions.include?(version)
                    ui.info("Version #{version} is already in chef")
-                   ui.confirm("Shall I bump the version (No to Cancel)")
+                   vt = choose_version(version)
+                   ui.confirm("Shall I bump the version to #{vt} (No to Cancel)")
                    version = choose_version(version)
                 else
                    break

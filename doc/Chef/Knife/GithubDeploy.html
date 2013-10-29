@@ -6,7 +6,7 @@
 <title>
   Class: Chef::Knife::GithubDeploy
   
-    &mdash; Documentation by YARD 0.8.7.2
+    &mdash; Knife Github utilities
   
 </title>
 
@@ -101,7 +101,60 @@
 </dl>
 <div class="clear"></div>
 
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    
+<p>Implements the knife github deploy function</p>
+<dl class="rdoc-list note-list"><dt>@author
+<dd>
+<p>Sander Botman (&lt;sbotman@schubergphilis.com&gt;)</p>
+</dd><dt>Copyright
+<dd>
+<p>Copyright © 2013 Sander Botman.</p>
+</dd></dl>
 
+<p>This code is specific to our company workflow When a cookbook is released
+it is tagged to a specific version This version should match the cookbook
+version (from the metadata) This version is then pinned against specific
+environments</p>
+
+<p>This class expects you to have pushed all your changes to github It will
+then do the rest</p>
+
+<p>All modes presume you have used github download to download a cookbook or
+are creating a new cookbook</p>
+
+<p>There are two modes of operation Development (default)</p>
+
+<p>This will take a cookbook name Do some basic version checks (if the current
+cookbook is frozen) and upload it</p>
+
+<p>If the cookbook is frozen it will force you to choose a new version and
+update the metadata accordingly</p>
+
+<p>Final (-f)</p>
+
+<p>You will be forced to select a new version. You can choose via the options
+whether to increment the Major/minor or patch revision numbers The version
+will be tagged Uploaded to the Chef server and frozen</p>
+
+<p>Version numbers</p>
+
+<p>You can choose a specific version number by specifying it on the command
+line.</p>
+
+<p>If you do not specify a version, the version will be the version in your
+cookbook&#39;s metadata</p>
+
+<p>A warning is issued if the version is lower than the version in github</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
 
 
 
@@ -369,19 +422,19 @@ cookbook ———————————————————————- 
       <pre class="lines">
 
 
-262
-263
-264
-265
-266
-267
-268
-269
-270
-271</pre>
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/chef/knife/github_deploy.rb', line 262</span>
+      <pre class="code"><span class="info file"># File 'lib/chef/knife/github_deploy.rb', line 244</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_checkout_tag'>checkout_tag</span><span class='lparen'>(</span><span class='id identifier rubyid_version'>version</span><span class='rparen'>)</span>
     <span class='id identifier rubyid_ui'>ui</span><span class='period'>.</span><span class='id identifier rubyid_info'>info</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Checking out tag </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_version'>version</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
@@ -413,25 +466,25 @@ cookbook ———————————————————————- 
       <pre class="lines">
 
 
-232
-233
-234
-235
-236
-237
-238
-239
-240
-241
-242
-243
-244
-245
-246
-247</pre>
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/chef/knife/github_deploy.rb', line 232</span>
+      <pre class="code"><span class="info file"># File 'lib/chef/knife/github_deploy.rb', line 214</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_choose_version'>choose_version</span><span class='lparen'>(</span><span class='id identifier rubyid_version'>version</span><span class='rparen'>)</span>
     <span class='kw'>if</span> <span class='id identifier rubyid_version'>version</span> <span class='op'>=~</span> <span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>(\d+)\.(\d+)\.(\d+)</span><span class='regexp_end'>/</span></span>
@@ -469,21 +522,21 @@ cookbook ———————————————————————- 
       <pre class="lines">
 
 
-249
-250
-251
-252
-253
-254
-255
-256
-257
-258
-259
-260</pre>
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/chef/knife/github_deploy.rb', line 249</span>
+      <pre class="code"><span class="info file"># File 'lib/chef/knife/github_deploy.rb', line 231</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_cookbook_upload'>cookbook_upload</span><span class='lparen'>(</span><span class='rparen'>)</span> 
     <span class='comment'># Git meuk should not be uploaded use chefignore file instead
@@ -517,30 +570,30 @@ cookbook ———————————————————————- 
       <pre class="lines">
 
 
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
 303
 304
-305
-306
-307
-308
-309
-310
-311
-312
-313
-314
-315
-316
-317
-318
-319
-320
-321
-322
-323</pre>
+305</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/chef/knife/github_deploy.rb', line 303</span>
+      <pre class="code"><span class="info file"># File 'lib/chef/knife/github_deploy.rb', line 285</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_do_commit'>do_commit</span><span class='lparen'>(</span><span class='id identifier rubyid_version'>version</span><span class='comma'>,</span> <span class='id identifier rubyid_push'>push</span><span class='rparen'>)</span>
     <span class='id identifier rubyid_cpath'>cpath</span> <span class='op'>=</span> <span class='id identifier rubyid_get_cookbook_path'>get_cookbook_path</span><span class='lparen'>(</span><span class='ivar'>@cookbook_name</span><span class='rparen'>)</span>
@@ -583,15 +636,15 @@ cookbook ———————————————————————- 
       <pre class="lines">
 
 
-273
-274
-275
-276
-277
-278</pre>
+255
+256
+257
+258
+259
+260</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/chef/knife/github_deploy.rb', line 273</span>
+      <pre class="code"><span class="info file"># File 'lib/chef/knife/github_deploy.rb', line 255</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_get_cookbook_chef_versions'>get_cookbook_chef_versions</span> <span class='lparen'>(</span><span class='rparen'>)</span>
     <span class='id identifier rubyid_cookbooks'>cookbooks</span> <span class='op'>=</span> <span class='id identifier rubyid_rest'>rest</span><span class='period'>.</span><span class='id identifier rubyid_get_rest'>get_rest</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>/cookbooks/</span><span class='embexpr_beg'>#{</span><span class='ivar'>@cookbook_name</span><span class='embexpr_end'>}</span><span class='tstring_content'>?num_version=all</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
@@ -619,12 +672,12 @@ cookbook ———————————————————————- 
       <pre class="lines">
 
 
-299
-300
-301</pre>
+281
+282
+283</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/chef/knife/github_deploy.rb', line 299</span>
+      <pre class="code"><span class="info file"># File 'lib/chef/knife/github_deploy.rb', line 281</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_get_cookbook_path'>get_cookbook_path</span><span class='lparen'>(</span><span class='id identifier rubyid_cookbook'>cookbook</span><span class='rparen'>)</span> 
     <span class='kw'>return</span> <span class='id identifier rubyid_cookbook_path_valid?'>cookbook_path_valid?</span><span class='lparen'>(</span><span class='id identifier rubyid_cookbook'>cookbook</span><span class='comma'>,</span> <span class='kw'>false</span><span class='rparen'>)</span>
@@ -661,24 +714,24 @@ cookbook ———————————————————————- 
       <pre class="lines">
 
 
-283
-284
-285
-286
-287
-288
-289
-290
-291
-292
-293
-294
-295
-296
-297</pre>
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/chef/knife/github_deploy.rb', line 283</span>
+      <pre class="code"><span class="info file"># File 'lib/chef/knife/github_deploy.rb', line 265</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_get_cookbook_version'>get_cookbook_version</span><span class='lparen'>(</span><span class='rparen'>)</span>
     <span class='id identifier rubyid_version'>version</span> <span class='op'>=</span> <span class='kw'>nil</span>
@@ -715,6 +768,24 @@ cookbook ———————————————————————- 
       <pre class="lines">
 
 
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
 104
 105
 106
@@ -808,28 +879,10 @@ cookbook ———————————————————————- 
 194
 195
 196
-197
-198
-199
-200
-201
-202
-203
-204
-205
-206
-207
-208
-209
-210
-211
-212
-213
-214
-215</pre>
+197</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/chef/knife/github_deploy.rb', line 104</span>
+      <pre class="code"><span class="info file"># File 'lib/chef/knife/github_deploy.rb', line 86</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_run'>run</span>
 
@@ -963,20 +1016,20 @@ cookbook ———————————————————————- 
       <pre class="lines">
 
 
-326
-327
-328
-329
-330
-331
-332
-333
-334
-335
-336</pre>
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/chef/knife/github_deploy.rb', line 326</span>
+      <pre class="code"><span class="info file"># File 'lib/chef/knife/github_deploy.rb', line 308</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_set_cookbook_version'>set_cookbook_version</span><span class='lparen'>(</span><span class='id identifier rubyid_version'>version</span><span class='rparen'>)</span>
     <span class='kw'>return</span>  <span class='kw'>unless</span> <span class='id identifier rubyid_get_cookbook_version'>get_cookbook_version</span><span class='lparen'>(</span><span class='rparen'>)</span> <span class='op'>!=</span> <span class='id identifier rubyid_version'>version</span>
@@ -1009,23 +1062,23 @@ cookbook ———————————————————————- 
       <pre class="lines">
 
 
-217
-218
-219
-220
-221
-222
-223
-224
-225
-226
-227
-228
-229
-230</pre>
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/chef/knife/github_deploy.rb', line 217</span>
+      <pre class="code"><span class="info file"># File 'lib/chef/knife/github_deploy.rb', line 199</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_up_version'>up_version</span><span class='lparen'>(</span><span class='id identifier rubyid_version'>version</span><span class='rparen'>)</span>
     <span class='kw'>while</span> <span class='kw'>true</span> <span class='kw'>do</span>
@@ -1051,7 +1104,7 @@ cookbook ———————————————————————- 
 </div>
 
     <div id="footer">
-  Generated on Tue Oct 29 13:41:48 2013 by
+  Generated on Tue Oct 29 14:39:14 2013 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.8.7.2 (ruby-2.0.0).
 </div>

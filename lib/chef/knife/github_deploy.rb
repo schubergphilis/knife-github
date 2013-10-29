@@ -1,67 +1,57 @@
-#
-# Author:: Sander Botman (<sbotman@schubergphilis.com>)
-# Copyright:: Copyright (c) 2013 Sander Botman.
-# License:: Apache License, Version 2.0
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# ---------------------------------------------------------------------------- #
-# Abstract
-# ---------------------------------------------------------------------------- #
-# This code is specific to our company workflow
-# When a cookbook is released it is tagged to a specific version
-# This version should match the cookbook version (from the metadata)
-# This version is then pinned against specific environments
-#
-# This class expects you to have pushed all your changes to github
-# It will then do the rest
-#
-# All modes presume you have used github download to download a cookbook or
-# are creating a new cookbook
-#
-# There are two modes of operation
-# Development (default)
-#
-# This will take a cookbook name
-# Do some basic version checks (if the current cookbook is frozen) and
-# upload it
-#
-# If the cookbook is frozen it will force you to choose a new version
-# and update the metadata accordingly
-#
-# Final (-f)
-#
-# You will be forced to select a new version.
-# You can choose via the options whether to increment the Major/minor or patch
-# revision numbers
-# The version will be tagged
-# Uploaded to the Chef server and frozen
-#
-# Version numbers
-#
-# You can choose a specific version number by specifying it on the command
-# line.
-#
-# If you do not specify a version, the version will be the version in your
-# cookbook's metadata
-#
-# A warning is issued if the version is lower than the version in github
-# ---------------------------------------------------------------------------- #
 require 'chef/knife'
 
 class Chef
   class Knife
-
+    # Implements the knife github deploy function
+    # @author:: Sander Botman (<sbotman@schubergphilis.com>)
+    # Copyright:: Copyright (c) 2013 Sander Botman.
+    # This code is specific to our company workflow
+    #
+    # == Overview
+    # All modes presume you have used github download to download a cookbook or
+    # are creating a new cookbook
+    #
+    # === Examples
+    # Deploy a development version of cookbook to your chef server
+    #    knife github deploy cookbook_name 
+    #    
+    # Deploy a release version of cookbook to your chef server
+    #    knife github deploy cookbook_name -f
+    #
+    # === Options
+    # -f Operate in final release mode
+    # -p Update the patch component of the version
+    # -m Update the minor component of the version
+    # -M Update the minor component of the version
+    # 
+    # == Operation Modes
+    # Development (default)
+    #
+    # This will take a cookbook name
+    # Do some basic version checks (if the current cookbook is frozen) and
+    # upload it
+    #
+    # If the cookbook is frozen it will force you to choose a new version
+    # and update the metadata accordingly
+    #
+    # Release (-f)
+    #
+    # You will be forced to select a new version.
+    # You can choose via the options whether to increment the Major/minor or patch
+    # revision numbers
+    # The version will be tagged
+    # Uploaded to the Chef server and frozen
+    #
+    # == Version numbers
+    #
+    # You can choose a specific version number by specifying it on the command
+    # line.
+    #
+    # If you do not specify a version, the version will be the version in your
+    # cookbook's metadata
+    #
+    # A warning is issued if the version is lower than the version in github
+    #
     class GithubDeploy < Knife
       deps do
         require 'chef/knife/github_base'

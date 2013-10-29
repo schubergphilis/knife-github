@@ -196,6 +196,7 @@ class Chef
                 set_cookbook_version(cookbook_version)
                 add_tag(cookbook_version)
             else
+                ui.confirm("Tag #{cookbook_version} exists - did you make this for this release?")
                 checkout_tag(cookbook_version)
                 set_cookbook_version(cookbook_version)
             end

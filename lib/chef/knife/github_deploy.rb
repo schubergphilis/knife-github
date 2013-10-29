@@ -92,11 +92,10 @@ class Chef
              :default => true
 
       def run
+        # Main run entry point for the class
 
-        # validate base options from base module.
         validate_base_options      
 
-        # Display information if debug mode is on.
         display_debug_info
 
         # Gather all repo information from github.
@@ -204,6 +203,12 @@ class Chef
 
       end
 
+      # Ask user to increment current/desired version number
+      # Method will exit if the user chooses not to increment the version
+      #
+      # @param version [String] Version
+      # @return [String] New version number
+      #
       def up_version(version)
           while true do
                 ui.info("Trying to deploy version #{version}")
@@ -219,6 +224,13 @@ class Chef
           version
       end
 
+      # Increment the current version according to the config
+      # options config[major] config[minor] config[patch]
+      # Method will exit if the user chooses not to increment the version
+      #
+      # @param version [String] Version
+      # @return [String] New version number
+      #
       def choose_version(version)
           if version =~ /(\d+)\.(\d+)\.(\d+)/
              major = $1
@@ -236,6 +248,8 @@ class Chef
           version
       end
 
+      # Upload the cookbook to chef server
+      # If mode is final, freeze the cookbook
       def cookbook_upload() 
           # Git meuk should not be uploaded use chefignore file instead
           # FileUtils.remove_entry("#{@github_tmp}/git/#{@cookbook_name}/.git")
@@ -249,6 +263,10 @@ class Chef
           upload.run
       end
 
+      # If a tag is available in github check it out
+      # Potentially quite dangerous as it could cause code to
+      # get rolled back
+      # @param version [String] Version
       def checkout_tag(version)
           ui.info "Checking out tag #{version}"
           cpath = get_cookbook_path(@cookbook_name)
@@ -260,6 +278,7 @@ class Chef
           end
       end
 
+      # Get a sorted array of version for the cookbook
       def get_cookbook_chef_versions ()
           cookbooks = rest.get_rest("/cookbooks/#{@cookbook_name}?num_version=all")
           cookbooks[@cookbook_name]['versions'].each do |v|
@@ -267,9 +286,8 @@ class Chef
           end
       end
 
-      # ---------------------------------------------------------------------- #
       # Get the version number in the git version of the cookbook
-      # ---------------------------------------------------------------------- #
+      # @param version [String] Version
       def get_cookbook_version()
           version = nil
           cpath = get_cookbook_path(@cookbook_name)
@@ -286,10 +304,17 @@ class Chef
           version
       end
 
+      # Determine if the current cookbook path is valid and that there
+      # is a cookbook of the correct name in there
+      # @param cookbook [String] cookbook name
+      # @return [String] Path to cookbook
       def get_cookbook_path(cookbook) 
           return cookbook_path_valid?(cookbook, false)
       end
 
+      # Commit changes in git
+      # @param version [String] cookbook version
+      # @param push [Bool] true is the cookbook should also be pushed
       def do_commit(version, push)
           cpath = get_cookbook_path(@cookbook_name)
           Dir.chdir("#{cpath}")
@@ -313,6 +338,8 @@ class Chef
       end
 
 
+      # Set the version in metadata.rb
+      # @param version [String] cookbook version
       def set_cookbook_version(version)
           return  unless get_cookbook_version() != version
           contents = ''

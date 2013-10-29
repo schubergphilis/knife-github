@@ -132,12 +132,6 @@ class Chef
           exit 1
         end
 
-        github_link = get_github_link(repo[@cookbook_name])
-        if github_link.nil? || github_link.empty?
-          Chef::Log.error("Cannot find the github link for the repository with the name: #{@cookbook_name}")
-          exit 1
-        end
-
         # is the cookbook in the cookbook_path?
         if cookbook_path_valid?(@cookbook_name, false).nil?
           Chef::Log.error("Cookbook is not in cookbook path")

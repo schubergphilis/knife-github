@@ -68,58 +68,58 @@ class Chef
           exit 1
         end
 
-        github_link = get_github_link(repo[@cookbook_name])
+        github_link = (repo[@cookbook_name][(get_repo_clone_link)])
         if github_link.nil? || github_link.empty?
           Chef::Log.error("Cannot find the link for the repository with the name: #{@cookbook_name}")
           exit 1
         end
-		get_clone(github_link, @cookbook_name)
-		version = get_cookbook_copy(@cookbook_name, cookbook_version)
-		do_diff(@cookbook_name, version)
+        puts github_link
+	get_clone(github_link, @cookbook_name)
+	version = get_cookbook_copy(@cookbook_name, cookbook_version)
+	do_diff(@cookbook_name, version)
         FileUtils.remove_entry(@github_tmp)
-
-
       end
 
-	  def do_diff(name, version)
-		  # Check to see if there is a tag matching the version
-          Dir.chdir("#{@github_tmp}/git/#{name}")
-		  if `git tag`.split("\n").include?(version)
-			  ui.info("Tag version #{version} found, checking that out for diff")
-			  # Tag found so checkout that tag
-		      `git checkout -b #{version}`
-		      if !$?.exitstatus == 0
-			      ui.error("Failed to checkout branch #{version}")
-		          exit 1
-              end
-          else
-			  ui.info("Version #{version} of #{name} has no tag, using latest for diff")
-		  end
-          FileUtils.remove_entry("#{@github_tmp}/git/#{name}/.git")
-          output = `git diff --color #{@github_tmp}/git/#{name} #{@github_tmp}/cb/#{name}-#{version} 2>&1`
-		  if output.length == 0
-			  ui.info("No differences found")
-		  else
-	  	  	ui.msg(output)
-		  end
-	  end
+      def do_diff(name, version)
+        # Check to see if there is a tag matching the version
+        Dir.chdir("#{@github_tmp}/git/#{name}")
+        if `git tag`.split("\n").include?(version)
+          ui.info("Tag version #{version} found, checking that out for diff")
+          # Tag found so checkout that tag
+          `git checkout -b #{version}`
+          if !$?.exitstatus == 0
+            ui.error("Failed to checkout branch #{version}")
+            exit 1
+          end
+        else
+          ui.info("Version #{version} of #{name} has no tag, using latest for diff")
+	end
 
-	  def get_cookbook_copy(name, version)
-          Dir.mkdir("#{@github_tmp}/cb")
-		  args = ['cookbook', 'download',  name ]
-		  args.push version if version
-          Dir.chdir("#{@github_tmp}/cb")
-                  download = Chef::Knife::CookbookDownload.new(args)
-                  download.config[:download_directory] = "#{@github_tmp}/cb"
-                  download.run
+        FileUtils.remove_entry("#{@github_tmp}/git/#{name}/.git")
+        output = `git diff --color #{@github_tmp}/git/#{name} #{@github_tmp}/cb/#{name}-#{version} 2>&1`
+        if output.length == 0
+          ui.info("No differences found")
+        else
+          ui.msg(output)
+        end
+      end
 
-		  Dir.entries("#{@github_tmp}/cb").each do |d|
-			  if d =~ /#{name}-(.*)/
-				version = $1
-			  end
-		  end
-		  return version
-	  end 
+      def get_cookbook_copy(name, version)
+        Dir.mkdir("#{@github_tmp}/cb")
+        args = ['cookbook', 'download',  name ]
+        args.push version if version
+        Dir.chdir("#{@github_tmp}/cb")
+        download = Chef::Knife::CookbookDownload.new(args)
+        download.config[:download_directory] = "#{@github_tmp}/cb"
+        download.run
+
+        Dir.entries("#{@github_tmp}/cb").each do |d|
+          if d =~ /#{name}-(.*)/
+            version = $1
+          end
+        end
+        return version
+      end 
 
     end
   end

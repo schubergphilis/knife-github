@@ -1,0 +1,130 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>
+  File: README
+  
+    &mdash; Documentation by YARD 0.8.7.2
+  
+</title>
+
+  <link rel="stylesheet" href="css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  hasFrames = window.top.frames.main ? true : false;
+  relpath = '';
+  framesUrl = "frames.html#!" + escape(window.location.href);
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div id="header">
+      <div id="menu">
+  
+    <a href="_index.html">Index</a> &raquo; 
+    <span class="title">File: README</span>
+  
+
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="class_list.html">
+      Class List
+    </a>
+  
+    <a class="full_list_link" id="method_list_link"
+        href="method_list.html">
+      Method List
+    </a>
+  
+    <a class="full_list_link" id="file_list_link"
+        href="file_list.html">
+      File List
+    </a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+
+    <iframe id="search_frame"></iframe>
+
+    <div id="content"><div id='filecontents'>
+<h1 id="label-knife-github">knife-github</h1>
+
+<p>Chef knife plugin to interact with the github enterprise appliance.</p>
+
+<h1 id="label-Attributes">Attributes</h1>
+
+<p>You can configure the following attributes within your knife.rb</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_knife'>knife</span><span class='lbracket'>[</span><span class='symbol'>:github_url</span><span class='rbracket'>]</span>             <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>https://github.company.lan</span><span class='tstring_end'>&#39;</span></span>  
+<span class='id identifier rubyid_knife'>knife</span><span class='lbracket'>[</span><span class='symbol'>:github_organizations</span><span class='rbracket'>]</span>   <span class='op'>=</span> <span class='lbracket'>[</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>customer-cookbooks</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>central-cookbooks</span><span class='tstring_end'>&#39;</span></span> <span class='rbracket'>]</span> 
+<span class='id identifier rubyid_knife'>knife</span><span class='lbracket'>[</span><span class='symbol'>:github_link</span><span class='rbracket'>]</span>            <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>ssh</span><span class='tstring_end'>&#39;</span></span> 
+<span class='id identifier rubyid_knife'>knife</span><span class='lbracket'>[</span><span class='symbol'>:github_api_version</span><span class='rbracket'>]</span>     <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>v3</span><span class='tstring_end'>&#39;</span></span>  
+<span class='id identifier rubyid_knife'>knife</span><span class='lbracket'>[</span><span class='symbol'>:github_ssl_verify_mode</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>verify_none</span><span class='tstring_end'>&#39;</span></span></code></pre>
+
+<h6 id="label-github_url">github_url</h6>
+
+<p>This will be the URL to your local github appliance.<br>
+Here you can also
+use the github.com address if you don&#39;t have an internal appliance.</p>
+
+<h6 id="label-github_organizations">github_organizations</h6>
+
+<p>Here you specify the organizations that you want to taget when searching
+for cookbooks.<br>
+The first entry will have priority over the other
+entries.</p>
+
+<h6 id="label-github_link+%3Coptional%3E">github_link &lt;optional&gt;</h6>
+
+<p>You can specify the link type that you would like to use to download your
+cookbooks, default is <code>ssh</code>.<br>
+Options are <code>ssh</code>
+<code>git</code> <code>http</code> <code>https</code> <code>svn</code></p>
+
+<h6 id="label-github_api_version+%3Coptional%3E">github_api_version &lt;optional&gt;</h6>
+
+<p>The current and default version of the api is <code>v3</code> but this will
+allow you to target older versions if needed.</p>
+
+<h6 id="label-github_ssl_verify_mode+%3Coptional%3E">github_ssl_verify_mode &lt;optional&gt;</h6>
+
+<p>The plugin is using the underlying knife http implementation, hence it will
+have the same options to handle ssl.<br>
+Currently the options are:
+<code>verify_peer</code> <code>verify_none</code></p>
+
+<h1 id="label-Other">Other</h1>
+
+<p>Cache files will be created into the: ~/.chef directory.
+We use cache files
+to offload the api calls and increase the performance for additional
+executions.<br>
+Updated to any repo inside the organization will cause the
+cache files to update.<br>
+But in case of any problems, the cache files can
+be safely deleted.</p>
+</div></div>
+
+    <div id="footer">
+  Generated on Tue Oct 29 13:41:47 2013 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.8.7.2 (ruby-2.0.0).
+</div>
+
+  </body>
+</html>

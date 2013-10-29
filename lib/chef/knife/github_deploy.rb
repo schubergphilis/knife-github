@@ -161,6 +161,9 @@ class Chef
         if (config[:major] || config[:minor])
             config[:patch] = false
         end
+        if (config[:major] && config[:minor])
+            config[:minor] = false
+        end
 
         begin
             isFrozen = rest.get_rest("cookbooks/#{@cookbook_name}/#{cookbook_version}").frozen_version?

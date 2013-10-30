@@ -234,7 +234,7 @@ class Chef
       def choose_version(version)
           if version =~ /(\d+)\.(\d+)\.(\d+)/
              major = $1
-             minor = $1
+             minor = $2
              patch = $3
              major = major.to_i + 1 if config[:major]
              minor = minor.to_i + 1 if config[:minor]

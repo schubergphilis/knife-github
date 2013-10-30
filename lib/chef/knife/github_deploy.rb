@@ -3,8 +3,8 @@ require 'chef/knife'
 class Chef
   class Knife
     # Implements the knife github deploy function
-    # @author:: Sander Botman (<sbotman@schubergphilis.com>)
-    # Copyright:: Copyright (c) 2013 Sander Botman.
+    # @author:: Ian Southam (<isoutham@schubergphilis.com>)
+    # Copyright:: Copyright (c) 2013 Ian Southam.
     # This code is specific to our company workflow
     #
     # == Overview

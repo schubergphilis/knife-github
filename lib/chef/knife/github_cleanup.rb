@@ -39,7 +39,7 @@ module KnifeGithubCleanup
       require 'chef/mixin/shell_out'
     end
     
-    banner "knife github cleanup [REPO] (options)"
+    banner "knife github cleanup [COOKBOOK] (options)"
     category "github"
 
     option :all,

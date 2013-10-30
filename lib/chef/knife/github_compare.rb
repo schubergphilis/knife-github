@@ -20,7 +20,6 @@ require 'chef/knife'
 
 class Chef
   class Knife
-
     class GithubCompare < Knife
 
       deps do

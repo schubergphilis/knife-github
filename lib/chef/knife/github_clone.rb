@@ -29,7 +29,7 @@ class Chef
         require 'chef/mixin/shell_out'
       end
       
-      banner "knife github clone REPO (options)"
+      banner "knife github clone COOKBOOK (options)"
       category "github"
 
       option :all,

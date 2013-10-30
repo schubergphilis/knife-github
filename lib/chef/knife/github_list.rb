@@ -84,7 +84,7 @@ class Chef
           repos = all_repos 
         end
 
-        columns = [ 'name,Name', 'git_url,Link' ]
+        columns = [ 'name,Chef Store', 'git_url,Github Store' ]
 
         if repos.nil? || repos.empty?
           Chef::Log.error("No repositories found.")

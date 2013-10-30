@@ -271,7 +271,7 @@
     <span class='id identifier rubyid_repos'>repos</span> <span class='op'>=</span> <span class='id identifier rubyid_all_repos'>all_repos</span> 
   <span class='kw'>end</span>
 
-  <span class='id identifier rubyid_columns'>columns</span> <span class='op'>=</span> <span class='lbracket'>[</span> <span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>name,Name</span><span class='tstring_end'>'</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>git_url,Link</span><span class='tstring_end'>'</span></span> <span class='rbracket'>]</span>
+  <span class='id identifier rubyid_columns'>columns</span> <span class='op'>=</span> <span class='lbracket'>[</span> <span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>name,Chef Store</span><span class='tstring_end'>'</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>git_url,Github Store</span><span class='tstring_end'>'</span></span> <span class='rbracket'>]</span>
 
   <span class='kw'>if</span> <span class='id identifier rubyid_repos'>repos</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>||</span> <span class='id identifier rubyid_repos'>repos</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
     <span class='const'>Chef</span><span class='op'>::</span><span class='const'>Log</span><span class='period'>.</span><span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>No repositories found.</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
@@ -290,7 +290,7 @@
 </div>
 
     <div id="footer">
-  Generated on Wed Oct 30 20:03:34 2013 by
+  Generated on Wed Oct 30 21:59:25 2013 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.8.7.2 (ruby-1.9.3).
 </div>

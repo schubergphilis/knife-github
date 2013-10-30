@@ -107,10 +107,10 @@
 <p>Implements the knife github deploy function</p>
 <table class="rdoc-list"><tr><td class="rdoc-term"><p>@author</p></td>
 <td>
-<p>Sander Botman (&lt;sbotman@schubergphilis.com&gt;)</p>
+<p>Ian Southam (&lt;isoutham@schubergphilis.com&gt;)</p>
 </td></tr><tr><td class="rdoc-term"><p>Copyright</p></td>
 <td>
-<p>Copyright (c) 2013 Sander Botman.</p>
+<p>Copyright (c) 2013 Ian Southam.</p>
 </td></tr></table>
 
 <p>This code is specific to our company workflow</p>
@@ -608,7 +608,7 @@ increment the version</p>
 <span class='kw'>def</span> <span class='id identifier rubyid_choose_version'>choose_version</span><span class='lparen'>(</span><span class='id identifier rubyid_version'>version</span><span class='rparen'>)</span>
     <span class='kw'>if</span> <span class='id identifier rubyid_version'>version</span> <span class='op'>=~</span> <span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>(\d+)\.(\d+)\.(\d+)</span><span class='regexp_end'>/</span></span>
        <span class='id identifier rubyid_major'>major</span> <span class='op'>=</span> <span class='backref'>$1</span>
-       <span class='id identifier rubyid_minor'>minor</span> <span class='op'>=</span> <span class='backref'>$1</span>
+       <span class='id identifier rubyid_minor'>minor</span> <span class='op'>=</span> <span class='backref'>$2</span>
        <span class='id identifier rubyid_patch'>patch</span> <span class='op'>=</span> <span class='backref'>$3</span>
        <span class='id identifier rubyid_major'>major</span> <span class='op'>=</span> <span class='id identifier rubyid_major'>major</span><span class='period'>.</span><span class='id identifier rubyid_to_i'>to_i</span> <span class='op'>+</span> <span class='int'>1</span> <span class='kw'>if</span> <span class='id identifier rubyid_config'>config</span><span class='lbracket'>[</span><span class='symbol'>:major</span><span class='rbracket'>]</span>
        <span class='id identifier rubyid_minor'>minor</span> <span class='op'>=</span> <span class='id identifier rubyid_minor'>minor</span><span class='period'>.</span><span class='id identifier rubyid_to_i'>to_i</span> <span class='op'>+</span> <span class='int'>1</span> <span class='kw'>if</span> <span class='id identifier rubyid_config'>config</span><span class='lbracket'>[</span><span class='symbol'>:minor</span><span class='rbracket'>]</span>
@@ -1440,7 +1440,7 @@ the user chooses not to increment the version</p>
 </div>
 
     <div id="footer">
-  Generated on Wed Oct 30 20:03:34 2013 by
+  Generated on Wed Oct 30 21:59:25 2013 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.8.7.2 (ruby-1.9.3).
 </div>

@@ -21,7 +21,7 @@ require 'chef/knife'
 class Chef
   class Knife
 
-    class GithubDownload < Knife
+    class GithubClone < Knife
 
       deps do
         require 'chef/knife/github_base'
@@ -29,19 +29,19 @@ class Chef
         require 'chef/mixin/shell_out'
       end
       
-      banner "knife github download COOKBOOK (options)"
+      banner "knife github clone REPO (options)"
       category "github"
 
       option :all,
              :short => "-a",
              :long => "--all",
-             :description => "Download all cookbooks from github.",
+             :description => "Clone all repo's from github.",
              :boolean => true
 
       option :force,
              :short => "-f",
              :long => "--force",
-             :description => "Delete the existing cookbooks if exist.",
+             :description => "Delete the existing local repo if exist.",
              :boolean => true
 
       def run
@@ -65,17 +65,17 @@ class Chef
         @cookbook_name = name_args.first unless name_args.empty?
         if @cookbook_name
           repo = all_repos.select { |k,v| v["name"] == @cookbook_name }
-          repo_download(repo, @cookbook_name)
+          repo_clone(repo, @cookbook_name)
         elsif config[:all]
           cookbooks.each do |c,v|
-            repo_download(all_repos, c)
+            repo_clone(all_repos, c)
           end
         else
-          Chef::Log.error("Please specify a cookbook name")
+          Chef::Log.error("Please specify a repository name")
         end
       end
 
-      def repo_download(repo, cookbook)
+      def repo_clone(repo, cookbook)
         if repo.nil? || repo.empty?
           ui.info("Processing [?] #{cookbook}")
           Chef::Log.info("Cannot find the repository: #{cookbook} within github")

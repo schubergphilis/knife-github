@@ -22,6 +22,15 @@ class Chef
   class Knife
 
     class GithubDiff < Knife
+    # Implements a diff function between your downloaded copy from git and what is in the Chef Server
+    # 
+    # By default, it expects that you have already done knife github download COOKBOOK
+    #
+    # knife github diff cookbook_name [Version]
+    # 
+    # You can also diff a cookbook against the github version bu using the -g option
+    # 
+    # You can also optionally give a version on the command line
 
       deps do
         require 'chef/knife/github_base'
@@ -32,13 +41,15 @@ class Chef
       banner "knife github diff COOKBOOK [version] (options)"
       category "github"
 
-      option :all,
-             :short => "-a",
-             :long => "--all",
-             :description => "Diff all cookbooks from chef against github.",
-             :boolean => true
+      option :github,
+             :short => "-g",
+             :long => "--github",
+             :description => "Diff against version in github",
+             :boolean => true,
+             :default => false
 
       def run
+      # The run method.  The entry point into the class
 
         # validate base options from base module.
         validate_base_options      
@@ -73,27 +84,41 @@ class Chef
           Chef::Log.error("Cannot find the link for the repository with the name: #{@cookbook_name}")
           exit 1
         end
-        puts github_link
-	get_clone(github_link, @cookbook_name)
-	version = get_cookbook_copy(@cookbook_name, cookbook_version)
-	do_diff(@cookbook_name, version)
+
+        if config[:github]
+	        get_clone(github_link, @cookbook_name)
+        else # Copy downloaded version to #{@github_tmp}/git
+            cpath = cookbook_path_valid?(@cookbook_name, false)
+            tpath = "#{@github_tmp}/git"
+            if ! File.exists?(tpath)
+                FileUtils.makedirs(tpath)
+            end
+            FileUtils.cp_r cpath, tpath
+        end
+
+	    version = get_cookbook_copy(@cookbook_name, cookbook_version)
+
+	    do_diff(@cookbook_name, version)
         FileUtils.remove_entry(@github_tmp)
       end
 
       def do_diff(name, version)
         # Check to see if there is a tag matching the version
         Dir.chdir("#{@github_tmp}/git/#{name}")
-        if `git tag`.split("\n").include?(version)
-          ui.info("Tag version #{version} found, checking that out for diff")
-          # Tag found so checkout that tag
-          `git checkout -b #{version}`
-          if !$?.exitstatus == 0
-            ui.error("Failed to checkout branch #{version}")
-            exit 1
-          end
-        else
-          ui.info("Version #{version} of #{name} has no tag, using latest for diff")
-	end
+        # Only checkout in github mode
+        if config[:github]
+            if `git tag`.split("\n").include?(version)
+              ui.info("Tag version #{version} found, checking that out for diff")
+              # Tag found so checkout that tag
+              `git checkout -b #{version}`
+              if !$?.exitstatus == 0
+                ui.error("Failed to checkout branch #{version}")
+                exit 1
+              end
+            else
+              ui.info("Version #{version} of #{name} has no tag, using latest for diff")
+            end
+        end
 
         FileUtils.remove_entry("#{@github_tmp}/git/#{name}/.git")
         output = `git diff --color #{@github_tmp}/git/#{name} #{@github_tmp}/cb/#{name}-#{version} 2>&1`

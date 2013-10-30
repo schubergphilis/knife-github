@@ -124,7 +124,7 @@ class Chef
         # is the cookbook in the cookbook_path?
         if cookbook_path_valid?(@cookbook_name, false).nil?
           Chef::Log.error("Cookbook is not in cookbook path")
-          ui.info("HINT:  knife github download #{@cookbook_name}")
+          ui.info("HINT:  knife github clone #{@cookbook_name}")
           exit 1
         end
 

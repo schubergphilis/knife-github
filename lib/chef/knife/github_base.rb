@@ -95,10 +95,10 @@ class Chef
                 ui.info "INFO: New version (#{webversion.to_s}) of knife-github is available!"
                 ui.info "INFO: Turn off this message with --github_no_update or add knife[:github_no_update] = true to your configuration"
               end 
-              Chef::Log.debug("local_gem_version    : " + thisversion.to_s)
-              Chef::Log.debug("repo_gem_version     : " + webversion.to_s)
-              Chef::Log.debug("repo_downloads       : " + json['version_downloads'].to_s)
-              Chef::Log.debug("repo_total_downloads : " + json['downloads'].to_s)
+              Chef::Log.debug("gem_local_version    : " + thisversion.to_s)
+              Chef::Log.debug("gem_repo_version     : " + webversion.to_s)
+              Chef::Log.debug("gem_downloads        : " + json['version_downloads'].to_s)
+              Chef::Log.debug("gem_total_downloads  : " + json['downloads'].to_s)
  
             rescue
               ui.info "INFO: Cannot verify gem version information from rubygems.org"

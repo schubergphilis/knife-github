@@ -212,50 +212,56 @@
       <pre class="lines">
 
 
-83
-84
-85
-86
-87
-88
-89
-90
-91
-92
-93
-94
-95
-96
-97
-98
-99
-100
-101
-102
-103
-104
-105</pre>
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/chef/knife/github_diff.rb', line 83</span>
+      <pre class="code"><span class="info file"># File 'lib/chef/knife/github_diff.rb', line 105</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_do_diff'>do_diff</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='id identifier rubyid_version'>version</span><span class='rparen'>)</span>
   <span class='comment'># Check to see if there is a tag matching the version
-</span>  <span class='const'>Dir</span><span class='period'>.</span><span class='id identifier rubyid_chdir'>chdir</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='ivar'>@github_tmp</span><span class='embexpr_end'>}</span><span class='tstring_content'>/git/</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
-  <span class='kw'>if</span> <span class='backtick'>`</span><span class='tstring_content'>git tag</span><span class='tstring_end'>`</span></span><span class='period'>.</span><span class='id identifier rubyid_split'>split</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\n</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='id identifier rubyid_version'>version</span><span class='rparen'>)</span>
-    <span class='id identifier rubyid_ui'>ui</span><span class='period'>.</span><span class='id identifier rubyid_info'>info</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Tag version </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_version'>version</span><span class='embexpr_end'>}</span><span class='tstring_content'> found, checking that out for diff</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
-    <span class='comment'># Tag found so checkout that tag
-</span>    <span class='backtick'>`</span><span class='tstring_content'>git checkout -b </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_version'>version</span><span class='embexpr_end'>}</span><span class='tstring_end'>`</span></span>
-    <span class='kw'>if</span> <span class='op'>!</span><span class='gvar'>$?</span><span class='period'>.</span><span class='id identifier rubyid_exitstatus'>exitstatus</span> <span class='op'>==</span> <span class='int'>0</span>
-      <span class='id identifier rubyid_ui'>ui</span><span class='period'>.</span><span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Failed to checkout branch </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_version'>version</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
-      <span class='id identifier rubyid_exit'>exit</span> <span class='int'>1</span>
-    <span class='kw'>end</span>
-  <span class='kw'>else</span>
-    <span class='id identifier rubyid_ui'>ui</span><span class='period'>.</span><span class='id identifier rubyid_info'>info</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Version </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_version'>version</span><span class='embexpr_end'>}</span><span class='tstring_content'> of </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'> has no tag, using latest for diff</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
-	<span class='kw'>end</span>
+</span>  <span class='const'>Dir</span><span class='period'>.</span><span class='id identifier rubyid_chdir'>chdir</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='ivar'>@github_tmp</span><span class='rbrace'>}</span><span class='tstring_content'>/git/</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_name'>name</span><span class='rbrace'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='comment'># Only checkout in github mode
+</span>  <span class='kw'>if</span> <span class='id identifier rubyid_config'>config</span><span class='lbracket'>[</span><span class='symbol'>:github</span><span class='rbracket'>]</span>
+      <span class='kw'>if</span> <span class='backtick'>`</span><span class='tstring_content'>git tag</span><span class='tstring_end'>`</span></span><span class='period'>.</span><span class='id identifier rubyid_split'>split</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\n</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span><span class='lparen'>(</span><span class='id identifier rubyid_version'>version</span><span class='rparen'>)</span>
+        <span class='id identifier rubyid_ui'>ui</span><span class='period'>.</span><span class='id identifier rubyid_info'>info</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Tag version </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_version'>version</span><span class='rbrace'>}</span><span class='tstring_content'> found, checking that out for diff</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+        <span class='comment'># Tag found so checkout that tag
+</span>        <span class='backtick'>`</span><span class='tstring_content'>git checkout -b </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_version'>version</span><span class='rbrace'>}</span><span class='tstring_end'>`</span></span>
+        <span class='kw'>if</span> <span class='op'>!</span><span class='gvar'>$?</span><span class='period'>.</span><span class='id identifier rubyid_exitstatus'>exitstatus</span> <span class='op'>==</span> <span class='int'>0</span>
+          <span class='id identifier rubyid_ui'>ui</span><span class='period'>.</span><span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Failed to checkout branch </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_version'>version</span><span class='rbrace'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+          <span class='id identifier rubyid_exit'>exit</span> <span class='int'>1</span>
+        <span class='kw'>end</span>
+      <span class='kw'>else</span>
+        <span class='id identifier rubyid_ui'>ui</span><span class='period'>.</span><span class='id identifier rubyid_info'>info</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Version </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_version'>version</span><span class='rbrace'>}</span><span class='tstring_content'> of </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_name'>name</span><span class='rbrace'>}</span><span class='tstring_content'> has no tag, using latest for diff</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+      <span class='kw'>end</span>
+  <span class='kw'>end</span>
 
-  <span class='const'>FileUtils</span><span class='period'>.</span><span class='id identifier rubyid_remove_entry'>remove_entry</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='ivar'>@github_tmp</span><span class='embexpr_end'>}</span><span class='tstring_content'>/git/</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>/.git</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_output'>output</span> <span class='op'>=</span> <span class='backtick'>`</span><span class='tstring_content'>git diff --color </span><span class='embexpr_beg'>#{</span><span class='ivar'>@github_tmp</span><span class='embexpr_end'>}</span><span class='tstring_content'>/git/</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'> </span><span class='embexpr_beg'>#{</span><span class='ivar'>@github_tmp</span><span class='embexpr_end'>}</span><span class='tstring_content'>/cb/</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>-</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_version'>version</span><span class='embexpr_end'>}</span><span class='tstring_content'> 2&gt;&amp;1</span><span class='tstring_end'>`</span></span>
+  <span class='const'>FileUtils</span><span class='period'>.</span><span class='id identifier rubyid_remove_entry'>remove_entry</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='ivar'>@github_tmp</span><span class='rbrace'>}</span><span class='tstring_content'>/git/</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_name'>name</span><span class='rbrace'>}</span><span class='tstring_content'>/.git</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_output'>output</span> <span class='op'>=</span> <span class='backtick'>`</span><span class='tstring_content'>git diff --color </span><span class='embexpr_beg'>#{</span><span class='ivar'>@github_tmp</span><span class='rbrace'>}</span><span class='tstring_content'>/git/</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_name'>name</span><span class='rbrace'>}</span><span class='tstring_content'> </span><span class='embexpr_beg'>#{</span><span class='ivar'>@github_tmp</span><span class='rbrace'>}</span><span class='tstring_content'>/cb/</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_name'>name</span><span class='rbrace'>}</span><span class='tstring_content'>-</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_version'>version</span><span class='rbrace'>}</span><span class='tstring_content'> 2&gt;&amp;1</span><span class='tstring_end'>`</span></span>
   <span class='kw'>if</span> <span class='id identifier rubyid_output'>output</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>==</span> <span class='int'>0</span>
     <span class='id identifier rubyid_ui'>ui</span><span class='period'>.</span><span class='id identifier rubyid_info'>info</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>No differences found</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
   <span class='kw'>else</span>
@@ -282,37 +288,37 @@
       <pre class="lines">
 
 
-107
-108
-109
-110
-111
-112
-113
-114
-115
-116
-117
-118
-119
-120
-121
-122</pre>
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/chef/knife/github_diff.rb', line 107</span>
+      <pre class="code"><span class="info file"># File 'lib/chef/knife/github_diff.rb', line 132</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_get_cookbook_copy'>get_cookbook_copy</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='id identifier rubyid_version'>version</span><span class='rparen'>)</span>
-  <span class='const'>Dir</span><span class='period'>.</span><span class='id identifier rubyid_mkdir'>mkdir</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='ivar'>@github_tmp</span><span class='embexpr_end'>}</span><span class='tstring_content'>/cb</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_args'>args</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>cookbook</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>download</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>  <span class='id identifier rubyid_name'>name</span> <span class='rbracket'>]</span>
+  <span class='const'>Dir</span><span class='period'>.</span><span class='id identifier rubyid_mkdir'>mkdir</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='ivar'>@github_tmp</span><span class='rbrace'>}</span><span class='tstring_content'>/cb</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_args'>args</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>cookbook</span><span class='tstring_end'>'</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>download</span><span class='tstring_end'>'</span></span><span class='comma'>,</span>  <span class='id identifier rubyid_name'>name</span> <span class='rbracket'>]</span>
   <span class='id identifier rubyid_args'>args</span><span class='period'>.</span><span class='id identifier rubyid_push'>push</span> <span class='id identifier rubyid_version'>version</span> <span class='kw'>if</span> <span class='id identifier rubyid_version'>version</span>
-  <span class='const'>Dir</span><span class='period'>.</span><span class='id identifier rubyid_chdir'>chdir</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='ivar'>@github_tmp</span><span class='embexpr_end'>}</span><span class='tstring_content'>/cb</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='const'>Dir</span><span class='period'>.</span><span class='id identifier rubyid_chdir'>chdir</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='ivar'>@github_tmp</span><span class='rbrace'>}</span><span class='tstring_content'>/cb</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
   <span class='id identifier rubyid_download'>download</span> <span class='op'>=</span> <span class='const'>Chef</span><span class='op'>::</span><span class='const'>Knife</span><span class='op'>::</span><span class='const'>CookbookDownload</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_args'>args</span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_download'>download</span><span class='period'>.</span><span class='id identifier rubyid_config'>config</span><span class='lbracket'>[</span><span class='symbol'>:download_directory</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='ivar'>@github_tmp</span><span class='embexpr_end'>}</span><span class='tstring_content'>/cb</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_download'>download</span><span class='period'>.</span><span class='id identifier rubyid_config'>config</span><span class='lbracket'>[</span><span class='symbol'>:download_directory</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='ivar'>@github_tmp</span><span class='rbrace'>}</span><span class='tstring_content'>/cb</span><span class='tstring_end'>&quot;</span></span>
   <span class='id identifier rubyid_download'>download</span><span class='period'>.</span><span class='id identifier rubyid_run'>run</span>
 
-  <span class='const'>Dir</span><span class='period'>.</span><span class='id identifier rubyid_entries'>entries</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='ivar'>@github_tmp</span><span class='embexpr_end'>}</span><span class='tstring_content'>/cb</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_d'>d</span><span class='op'>|</span>
-    <span class='kw'>if</span> <span class='id identifier rubyid_d'>d</span> <span class='op'>=~</span> <span class='tstring'><span class='regexp_beg'>/</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>-(.*)</span><span class='regexp_end'>/</span></span>
+  <span class='const'>Dir</span><span class='period'>.</span><span class='id identifier rubyid_entries'>entries</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='ivar'>@github_tmp</span><span class='rbrace'>}</span><span class='tstring_content'>/cb</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_d'>d</span><span class='op'>|</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_d'>d</span> <span class='op'>=~</span> <span class='tstring'><span class='regexp_beg'>/</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_name'>name</span><span class='rbrace'>}</span><span class='tstring_content'>-(.*)</span><span class='regexp_end'>/</span></span>
       <span class='id identifier rubyid_version'>version</span> <span class='op'>=</span> <span class='backref'>$1</span>
     <span class='kw'>end</span>
   <span class='kw'>end</span>
@@ -338,16 +344,6 @@
       <pre class="lines">
 
 
-41
-42
-43
-44
-45
-46
-47
-48
-49
-50
 51
 52
 53
@@ -378,13 +374,36 @@
 78
 79
 80
-81</pre>
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'lib/chef/knife/github_diff.rb', line 41</span>
+      <pre class="code"><span class="info file"># File 'lib/chef/knife/github_diff.rb', line 51</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_run'>run</span>
-
+<span class='comment'># The run method.  The entry point into the class
+</span>
   <span class='comment'># validate base options from base module.
 </span>  <span class='id identifier rubyid_validate_base_options'>validate_base_options</span>      
 
@@ -409,19 +428,30 @@
   <span class='kw'>end</span>
   
   <span class='kw'>if</span> <span class='id identifier rubyid_repo'>repo</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
-    <span class='const'>Chef</span><span class='op'>::</span><span class='const'>Log</span><span class='period'>.</span><span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Cannot find the repository: </span><span class='embexpr_beg'>#{</span><span class='embexpr_end'>}</span><span class='tstring_content'> within github</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+    <span class='const'>Chef</span><span class='op'>::</span><span class='const'>Log</span><span class='period'>.</span><span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Cannot find the repository: </span><span class='embexpr_beg'>#{</span><span class='rbrace'>}</span><span class='tstring_content'> within github</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
     <span class='id identifier rubyid_exit'>exit</span> <span class='int'>1</span>
   <span class='kw'>end</span>
 
   <span class='id identifier rubyid_github_link'>github_link</span> <span class='op'>=</span> <span class='lparen'>(</span><span class='id identifier rubyid_repo'>repo</span><span class='lbracket'>[</span><span class='ivar'>@cookbook_name</span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='lparen'>(</span><span class='id identifier rubyid_get_repo_clone_link'>get_repo_clone_link</span><span class='rparen'>)</span><span class='rbracket'>]</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_github_link'>github_link</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> <span class='op'>||</span> <span class='id identifier rubyid_github_link'>github_link</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
-    <span class='const'>Chef</span><span class='op'>::</span><span class='const'>Log</span><span class='period'>.</span><span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Cannot find the link for the repository with the name: </span><span class='embexpr_beg'>#{</span><span class='ivar'>@cookbook_name</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+    <span class='const'>Chef</span><span class='op'>::</span><span class='const'>Log</span><span class='period'>.</span><span class='id identifier rubyid_error'>error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Cannot find the link for the repository with the name: </span><span class='embexpr_beg'>#{</span><span class='ivar'>@cookbook_name</span><span class='rbrace'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
     <span class='id identifier rubyid_exit'>exit</span> <span class='int'>1</span>
   <span class='kw'>end</span>
-  <span class='id identifier rubyid_puts'>puts</span> <span class='id identifier rubyid_github_link'>github_link</span>
-	<span class='id identifier rubyid_get_clone'>get_clone</span><span class='lparen'>(</span><span class='id identifier rubyid_github_link'>github_link</span><span class='comma'>,</span> <span class='ivar'>@cookbook_name</span><span class='rparen'>)</span>
-	<span class='id identifier rubyid_version'>version</span> <span class='op'>=</span> <span class='id identifier rubyid_get_cookbook_copy'>get_cookbook_copy</span><span class='lparen'>(</span><span class='ivar'>@cookbook_name</span><span class='comma'>,</span> <span class='id identifier rubyid_cookbook_version'>cookbook_version</span><span class='rparen'>)</span>
-	<span class='id identifier rubyid_do_diff'>do_diff</span><span class='lparen'>(</span><span class='ivar'>@cookbook_name</span><span class='comma'>,</span> <span class='id identifier rubyid_version'>version</span><span class='rparen'>)</span>
+
+  <span class='kw'>if</span> <span class='id identifier rubyid_config'>config</span><span class='lbracket'>[</span><span class='symbol'>:github</span><span class='rbracket'>]</span>
+   <span class='id identifier rubyid_get_clone'>get_clone</span><span class='lparen'>(</span><span class='id identifier rubyid_github_link'>github_link</span><span class='comma'>,</span> <span class='ivar'>@cookbook_name</span><span class='rparen'>)</span>
+  <span class='kw'>else</span> <span class='comment'># Copy downloaded version to #{@github_tmp}/git
+</span>      <span class='id identifier rubyid_cpath'>cpath</span> <span class='op'>=</span> <span class='id identifier rubyid_cookbook_path_valid?'>cookbook_path_valid?</span><span class='lparen'>(</span><span class='ivar'>@cookbook_name</span><span class='comma'>,</span> <span class='kw'>false</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_tpath'>tpath</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='ivar'>@github_tmp</span><span class='rbrace'>}</span><span class='tstring_content'>/git</span><span class='tstring_end'>&quot;</span></span>
+      <span class='kw'>if</span> <span class='op'>!</span> <span class='const'>File</span><span class='period'>.</span><span class='id identifier rubyid_exists?'>exists?</span><span class='lparen'>(</span><span class='id identifier rubyid_tpath'>tpath</span><span class='rparen'>)</span>
+          <span class='const'>FileUtils</span><span class='period'>.</span><span class='id identifier rubyid_makedirs'>makedirs</span><span class='lparen'>(</span><span class='id identifier rubyid_tpath'>tpath</span><span class='rparen'>)</span>
+      <span class='kw'>end</span>
+      <span class='const'>FileUtils</span><span class='period'>.</span><span class='id identifier rubyid_cp_r'>cp_r</span> <span class='id identifier rubyid_cpath'>cpath</span><span class='comma'>,</span> <span class='id identifier rubyid_tpath'>tpath</span>
+  <span class='kw'>end</span>
+
+	    <span class='id identifier rubyid_version'>version</span> <span class='op'>=</span> <span class='id identifier rubyid_get_cookbook_copy'>get_cookbook_copy</span><span class='lparen'>(</span><span class='ivar'>@cookbook_name</span><span class='comma'>,</span> <span class='id identifier rubyid_cookbook_version'>cookbook_version</span><span class='rparen'>)</span>
+
+	    <span class='id identifier rubyid_do_diff'>do_diff</span><span class='lparen'>(</span><span class='ivar'>@cookbook_name</span><span class='comma'>,</span> <span class='id identifier rubyid_version'>version</span><span class='rparen'>)</span>
   <span class='const'>FileUtils</span><span class='period'>.</span><span class='id identifier rubyid_remove_entry'>remove_entry</span><span class='lparen'>(</span><span class='ivar'>@github_tmp</span><span class='rparen'>)</span>
 <span class='kw'>end</span></pre>
     </td>
@@ -434,9 +464,9 @@
 </div>
 
     <div id="footer">
-  Generated on Tue Oct 29 16:09:14 2013 by
+  Generated on Wed Oct 30 20:03:34 2013 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.8.7.2 (ruby-2.0.0).
+  0.8.7.2 (ruby-1.9.3).
 </div>
 
   </body>

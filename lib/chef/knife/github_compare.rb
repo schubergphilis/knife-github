@@ -67,8 +67,8 @@ class Chef
             }
           else
             cookbooks.each { |k,v|
-              get_all_repos[k].nil? || get_all_repos[k][git_link].nil? ? gh_url = ui.color("ERROR: Cannot find cookbook!", :red) : gh_url = get_all_repos[k][git_link]
-              get_all_repos[k].nil? || get_all_repos[k]['latest_tag'].nil? ? gh_tag = ui.color("ERROR: No tags!", :red) : gh_tag = get_all_repos[k]['latest_tag']
+              get_all_repos[k].nil? || get_all_repos[k][git_link].nil? ? gh_url = ui.color("Cannot find cookbook!", :red) : gh_url = get_all_repos[k][git_link]
+              get_all_repos[k].nil? || get_all_repos[k]['latest_tag'].nil? || get_all_repos[k]['latest_tag'].empty? ? gh_tag = ui.color("No tags!", :red) : gh_tag = get_all_repos[k]['latest_tag']
               all_repos[k] = { 'name' => k, 'latest_cb_tag' => v['versions'][0]['version'], 'git_url' => gh_url, 'latest_gh_tag' => gh_tag }
             }
           end
@@ -82,7 +82,7 @@ class Chef
           repos = all_repos 
         end
 
-        columns = [ 'name,Name', 'latest_cb_tag,Tag', 'git_url,Link', 'latest_gh_tag,Tag' ]
+        columns = [ 'name,Chef Store', 'latest_cb_tag,Tag', 'git_url,Github Store', 'latest_gh_tag,Tag' ]
         match = [ 'latest_cb_tag', 'latest_gh_tag' ]
 
         if repos.nil? || repos.empty?

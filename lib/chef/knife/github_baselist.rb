@@ -57,10 +57,13 @@ class Chef
                  config[:fields].downcase.split(',').each { |n| object_list << ((v["#{n}".strip]).to_s || 'n/a') }
               else
                 color = :white
-                if config[:mismatch] && !match.empty? && !config[:all]
+                if !match.empty? && !config[:all]
                   matches = []; match.each { |m| matches << v[m].to_s }
-                  next if matches.uniq.count == 1 
-                  color = :yellow
+                  if matches.uniq.count == 1
+                    next if config[:mismatch]
+                  else
+                    color = :yellow 
+                  end
                 end
                 columns.each { |c|  r = c.split(","); object_list << ui.color((v["#{r.first}"]).to_s, color) || 'n/a' }
               end

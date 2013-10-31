@@ -292,7 +292,7 @@ class Chef
           version = nil
           cpath = get_cookbook_path(@cookbook_name)
           File.foreach("#{cpath}/metadata.rb") do |line|
-              if line =~ /version.*"(.*)"/i
+              if line =~ /version.*['"](.*)['"]/i
                  version = $1
                  break
               end

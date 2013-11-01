@@ -31,7 +31,8 @@ class Chef
     class GithubPin < Knife
       deps do
         require 'chef/knife/github_base'
-
+        require 'chef/knife/core/object_loader'
+        require "json"
         include Chef::Knife::GithubBase
       end
       
@@ -49,28 +50,87 @@ class Chef
 
         cookbook_version = nil
         @cookbook_name = name_args.first unless name_args.empty?
+        @version = nil
+        @env     = nil
  
         if @cookbook_name.empty?
            Chef::Log.error("You must specify a cookbook name to use this module")
         end
 
         # Parameter 2 can be a version or an environment (if version is not given) or nothing
-        arg1 = name_args.[1] unless name_args[1].empty?
-        arg2 = name_args.[2] unless name_args[2].empty?
+        arg1 = name_args[1] unless name_args[1].nil?
+        arg2 = name_args[2] unless name_args[2].nil?
 
         if(!arg1.nil? && !arg2.nil?)
             # we have a version and an environment
-            puts "Two parameters given"
+            @version = arg1
+            @env = arg2
         end
         if(!arg1.nil? && arg2.nil?)
             # we have a version or an environment
-            puts "One parameters given"
+            if Mixlib::Versioning.parse(arg1).nil?
+                @env = arg1
+            end
         end
-        if(arg1.nil? && arg2.nil?)
-            # we have nothing
-            puts "No parameters given"
+        # If we have no version go and get it from the cookbook in the user's cookbooks path
+        if @version.nil?
+            unless @version = get_cookbook_version()
+                ui.error('Could not get the version of the cookbook');
+                exit 1;
+            end
         end
-        cb1 = Mixlib::Versioning.parse(cookbook_version)
+
+        @envs = list_environments()
+        if @env.nil?
+            ask_which_environment()
+        end
+        ui.confirm("Pin version #{@version} of cookbook #{@cookbook_name} in Environment #{@env}")
+        if @envs[@env].cookbook_versions.has_key?(@cookbook_name)
+            cval = @envs[@env].cookbook_versions[@cookbook_name]
+            if cval == @version
+                ui.error "#{@cookbook_name} is already pinned to version #{cval}. Nothibg to do!"
+                exit 1
+            end
+        end
+        @envs[@env].cookbook_versions[@cookbook_name] = @version
+        ui.info "Set version to #{@version} for environment #{@env}"
+        if ! File.directory? @github_tmp
+             Dir.mkdir(@github_tmp)
+             Chef::Log.debug("Creating temporary directory #{@github_tmp}")
+        end
+        File.open("#{@github_tmp}/#{@env}.json", 'w') {|f| f.write JSON.pretty_generate(@envs[@env]) }
+        Chef::Log.debug( "Json written to #{@github_tmp}/#{@env}.json" )
+
+        # Finally do the upload
+		args = ['environment',  "from_file", "#{@github_tmp}/#{@env}.json" ]
+        upload = Chef::Knife::EnvironmentFromFile.new(args)
+        upload.run
+
+      end
+
+      def list_environments()
+        response = Hash.new
+        Chef::Search::Query.new.search(:environment) do |e|
+              response[e.name] = e unless e.nil?
+        end
+        response.delete('_default') if response.has_key?('_default');
+        response
+      end
+
+      def ask_which_environment
+        question = "Which environment do you wish to pin?\n"
+        valid_responses = {}
+        @envs.keys.each_with_index do |e, index|
+            valid_responses[(index + 1).to_s] = e
+            question << "#{index + 1}. #{e}\n"
+        end
+        question += "\n"
+        response = ask_question(question).strip
+        unless @env = valid_responses[response]
+           ui.error("'#{response}' is not a valid value.")
+           exit(1)
+        end
+        @env
       end
 
     end

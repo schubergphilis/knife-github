@@ -309,6 +309,15 @@ class Chef
               exit 1
             end
 
+            if cookbook_path.is_a?(String)
+              cookbook_path = [ cookbook_path ]
+            end
+
+            unless File.exists?(cookbook_path.first) && File.directory?(cookbook_path.first)
+              Chef::Log.error("Cannot find the directory: #{cookbook_path.first}")
+              exit 1
+            end
+
             unless File.exists?(cookbook_path.first) && File.directory?(cookbook_path.first)
               Chef::Log.error("Cannot find the directory: #{cookbook_path.first}")
               exit 1

@@ -269,7 +269,7 @@ class Chef
       # @param version [String] Version
       def checkout_tag(version)
           ui.info "Checking out tag #{version}"
-          cpath = get_cookbook_path(@cookbook_name)
+          cpath = cookbook_path_valid?(@cookbook_name, false)
           Dir.chdir(cpath);
 		  `git checkout -b #{version}`
 		  if !$?.exitstatus == 0
@@ -286,37 +286,12 @@ class Chef
           end
       end
 
-      # Get the version number in the git version of the cookbook
-      # @param version [String] Version
-      def get_cookbook_version()
-          version = nil
-          cpath = get_cookbook_path(@cookbook_name)
-          File.foreach("#{cpath}/metadata.rb") do |line|
-              if line =~ /version.*['"](.*)['"]/i
-                 version = $1
-                 break
-              end
-          end
-          if version.nil?
-             Chef::Log.error("Cannot get the version for cookbook #{@cookbook_name}")
-             exit 1
-          end
-          version
-      end
-
-      # Determine if the current cookbook path is valid and that there
-      # is a cookbook of the correct name in there
-      # @param cookbook [String] cookbook name
-      # @return [String] Path to cookbook
-      def get_cookbook_path(cookbook) 
-          return cookbook_path_valid?(cookbook, false)
-      end
 
       # Commit changes in git
       # @param version [String] cookbook version
       # @param push [Bool] true is the cookbook should also be pushed
       def do_commit(version, push)
-          cpath = get_cookbook_path(@cookbook_name)
+          cpath = cookbook_path_valid?(@cookbook_path, false)
           Dir.chdir("#{cpath}")
           puts cpath
           output = `git commit -a -m "Deploy #{version}" 2>&1`
@@ -343,7 +318,7 @@ class Chef
       def set_cookbook_version(version)
           return  unless get_cookbook_version() != version
           contents = ''
-          cpath = get_cookbook_path(@cookbook_name)
+          cpath = cookbook_path_valid?(@cookbook_name, false)
           File.foreach("#{cpath}/metadata.rb") do |line|
               line.gsub!(/(version[\t\s]+)(.*)/i,"\\1 \"#{version}\"\n")
               contents = contents << line

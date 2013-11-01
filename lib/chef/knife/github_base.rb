@@ -338,6 +338,24 @@ class Chef
             return cookbook_path
           end
 
+          # Get the version number in the git version of the cookbook
+          # @param version [String] Version
+          def get_cookbook_version()
+              version = nil
+              cpath = cookbook_path_valid?(@cookbook_name, false)
+              File.foreach("#{cpath}/metadata.rb") do |line|
+                  if line =~ /version.*['"](.*)['"]/i
+                     version = $1
+                     break
+                  end
+              end
+              if version.nil?
+                 Chef::Log.error("Cannot get the version for cookbook #{@cookbook_name}")
+                 exit 1
+              end
+              version
+          end
+
         end
       end
     end

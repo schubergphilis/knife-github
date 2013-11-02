@@ -90,8 +90,8 @@ module KnifeGithubCleanup
       cookbook = File.join(cookbook_path.first,repo)
       if File.exists?(cookbook)
         if repo_status_clean?(repo, cookbook)
-          # delete the repo
-          ui.info("Processing [D] #{repo}")
+          # delete the repo 
+          ui.info("Processing [ DELETE  ] #{repo}")
           FileUtils.remove_entry(cookbook) 
         end
       else
@@ -103,13 +103,13 @@ module KnifeGithubCleanup
       shell_out!("git fetch", :cwd => cookbook)
       status = shell_out!("git status", :cwd => cookbook)
       unless status.stdout == "# On branch master\nnothing to commit (working directory clean)\n"
-        ui.info("Processing [C] #{repo} (Action needed!)")
+        ui.info("Processing [ COMMIT  ] #{repo} (Action needed!)")
         status.stdout.lines.each { |l| puts l.sub( /^/, "    ") }
         return false   
       end
       log = shell_out!("git log --branches --not --remotes --simplify-by-decoration --decorate --oneline", :cwd => cookbook)
       unless log.stdout.empty?
-        ui.info("Processing [B] #{repo} (Action needed!)")
+        ui.info("Processing [ BRANCH  ] #{repo} (Action needed!)")
         ui.info("    Please check your branches, one of them has unsaved changes")
         log.stdout.lines.each { |l| puts l.sub( /^/, "    ") }
         return false   

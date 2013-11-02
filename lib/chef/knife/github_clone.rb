@@ -77,14 +77,14 @@ class Chef
 
       def repo_clone(repo, cookbook_name)
         if repo.nil? || repo.empty?
-          ui.info("Processing [?] #{cookbook_name}")
+          ui.info("Processing [ UNKNOWN ] #{cookbook_name}")
           Chef::Log.info("Cannot find the repository: #{cookbook_name} within github")
           return nil
         end
 
         repo_link = get_repo_clone_link()
         if repo[cookbook_name].nil? || repo[cookbook_name][repo_link].nil? || repo[cookbook_name][repo_link].empty?
-          ui.info("Processing [?] #{cookbook_name}")
+          ui.info("Processing [ UNKNOWN ] #{cookbook_name}")
           Chef::Log.info("Cannot find the link for the repository with the name: #{cookbook_name}")
           return nil
         end
@@ -92,10 +92,10 @@ class Chef
  	github_url = repo[cookbook_name][repo_link]
         cookbook_path = get_cookbook_path(cookbook_name)
         if File.exists?(cookbook_path)
-          ui.info("Processing [S] #{cookbook_name}")
+          ui.info("Processing [ SKIP    ] #{cookbook_name}")
           Chef::Log.info("Path to #{cookbook_path} already exists, skipping.")
         else
-          ui.info("Processing [C] #{cookbook_name}")
+          ui.info("Processing [ CLONE   ] #{cookbook_name}")
           Chef::Log.info("Cloning repository to: #{cookbook_path}")
           shell_out!("git clone #{github_url} #{cookbook_path}") 
         end

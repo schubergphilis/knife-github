@@ -305,7 +305,7 @@ class Chef
           end
 
           def get_cookbook_path(cookbook_name)
-            cookbook_path = locate_config_value("cookbook_path")
+            cookbook_path = config[:cookbook_path] || Chef::Config[:cookbook_path]
             if cookbook_path.nil? || cookbook_path.empty?
               Chef::Log.error("Please specify a cookbook path")
               exit 1

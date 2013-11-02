@@ -189,6 +189,8 @@ class Chef
           end
 
           def get_repos_github(org)
+            # Get all repo's from cache file 
+
             # Get all repo's for the org from github
             arr  = []
             page = 1
@@ -291,8 +293,8 @@ class Chef
           end
 
           def add_tag(version)
-              cpath = cookbook_path_valid?(@cookbook_name, false)
-              Dir.chdir(cpath)
+              cookbook_path = get_cookbook_path(@cookbook_name)
+              Dir.chdir(cookbook_path)
               Chef::Log.debug "Adding tag"
               output = `git tag -a "#{version}" -m "Added tag #{version}" 2>&1`
               if $?.exitstatus != 0
@@ -302,21 +304,14 @@ class Chef
               end
           end
 
-          def cookbook_path_valid?(cookbook_name, check_exists)
-            cookbook_path = config[:cookbook_path] || Chef::Config[:cookbook_path]
+          def get_cookbook_path(cookbook_name)
+            cookbook_path = locate_config_value("cookbook_path")
             if cookbook_path.nil? || cookbook_path.empty?
               Chef::Log.error("Please specify a cookbook path")
               exit 1
             end
 
-            if cookbook_path.is_a?(String)
-              cookbook_path = [ cookbook_path ]
-            end
-
-            unless File.exists?(cookbook_path.first) && File.directory?(cookbook_path.first)
-              Chef::Log.error("Cannot find the directory: #{cookbook_path.first}")
-              exit 1
-            end
+            cookbook_path = [ cookbook_path ] if cookbook_path.is_a?(String)
 
             unless File.exists?(cookbook_path.first) && File.directory?(cookbook_path.first)
               Chef::Log.error("Cannot find the directory: #{cookbook_path.first}")
@@ -324,26 +319,14 @@ class Chef
             end
 
             cookbook_path = File.join(cookbook_path.first,cookbook_name)
-            if check_exists
-                if File.exists?(cookbook_path)
-                  ui.info("Processing [S] #{cookbook_name}")
-                  Chef::Log.info("Path to #{cookbook_path} already exists, skipping.")
-                  return nil
-                end
-            else
-                if ! File.exists?(cookbook_path)
-                  return nil
-                end
-            end
-            return cookbook_path
-          end
+          end 
 
           # Get the version number in the git version of the cookbook
           # @param version [String] Version
           def get_cookbook_version()
               version = nil
-              cpath = cookbook_path_valid?(@cookbook_name, false)
-              File.foreach("#{cpath}/metadata.rb") do |line|
+              cookbook_path = get_cookbook_path(@cookbook_name)
+              File.foreach("#{cookbook_path}/metadata.rb") do |line|
                   if line =~ /version.*['"](.*)['"]/i
                      version = $1
                      break

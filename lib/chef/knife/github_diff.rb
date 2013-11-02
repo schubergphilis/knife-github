@@ -88,8 +88,8 @@ class Chef
         if config[:github]
 	        get_clone(github_link, @cookbook_name)
         else # Copy downloaded version to #{@github_tmp}/git
-            cpath = cookbook_path_valid?(@cookbook_name, false)
-            if cpath.nil?
+            cookbook_path = get_cookbook_path(@cookbook_name)
+            if cookbook_path.nil?
               Chef::Log.error("Cannot find any local repository with the name: #{@cookbook_name}")
               Chef::Log.error("Please use the option -g if you want to diff the github repository")
               exit 1
@@ -98,7 +98,7 @@ class Chef
             if ! File.exists?(tpath)
                 FileUtils.makedirs(tpath)
             end
-            FileUtils.cp_r cpath, tpath
+            FileUtils.cp_r cookbook_path, tpath
         end
 
 	    version = get_cookbook_copy(@cookbook_name, cookbook_version)

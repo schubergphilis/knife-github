@@ -39,7 +39,13 @@ module KnifeGithubCreate
     option :github_token,
            :short => "-t",
            :long => "--github_token",
-           :description => "Your githb token for authentication"
+           :description => "Your github token for OAuth authentication"
+
+    option :github_user_repo,
+           :short => "-U",
+           :long => "--github_user_repo",
+           :description => "Create the repo within your user environment",
+           :boolean => true
 
     def run
       extend Chef::Mixin::ShellOut
@@ -61,43 +67,121 @@ module KnifeGithubCreate
         exit 1
       end 
       
-      token = get_github_token()
-      
-      url = @github_url + "/api/" + @github_api_version + "/user/repos"
+      if config[:github_user_repo]
+        url = @github_url + "/api/" + @github_api_version + "/user/repos"
+        Chef::Log.debug("Creating repository in user environment")
+      else
+        url = @github_url + "/api/" + @github_api_version + "/orgs/#{org}/repos"
+        Chef::Log.debug("Creating repository in organization: #{org}")
+      end
 
-      # Get body data 
+      # Get token information
+      token = get_github_token()
+
+      # Get body data for post
       body = get_body_json(name)
 
-      Chef::Log.debug("Creating the repository on github in organization: #{org}")
+      # Creating the repository 
+      Chef::Log.debug("Creating the github repository")
       repo = post_request(url, body, token)
 
       Chef::Log.debug("Creating the local repository based on template")
       create_cookbook(name)
 
-      cpath = cookbook_path_valid?(name, false)
-      gitlink = repo['ssh_url']
+      cookbook_path = get_cookbook_path(name)
 
-      #shell_out!("git fetch", :cwd => cookbook)
-      #status = shell_out!("git status", :cwd => cookbook)
-      #unless status.stdout == "# On branch master\nnothing to commit (working directory clean)\n"
+      # Updating README.md if needed.
+      update_readme(cookbook_path)
+ 
+      # Updateing metadata.rb if needed.
+      update_metadata(cookbook_path)
 
-      shell_out!("git init", :cwd => cpath )
-      shell_out!("git add .", :cwd => cpath ) 
-      shell_out!("git commit -m 'creating the initial cookbook structure from knife-github' ", :cwd => cpath ) 
-      shell_out!("git remote add origin #{gitlink} ", :cwd => cpath ) 
-      shell_out!("git push -u origin master", :cwd => cpath ) 
+      github_ssh_url = repo['ssh_url']
+       
+      shell_out!("git init", :cwd => cookbook_path )
+      shell_out!("git add .", :cwd => cookbook_path ) 
+      shell_out!("git commit -m 'creating initial cookbook structure from the knife-github plugin' ", :cwd => cookbook_path ) 
+      shell_out!("git remote add origin #{github_ssh_url} ", :cwd => cookbook_path ) 
+      shell_out!("git push -u origin master", :cwd => cookbook_path ) 
     end
-    
-    def create_cookbook(name)
-      args = [ name ]
+
+    # Set the username in README.md
+    # @param name [String] cookbook path    
+    def update_readme(cookbook_path)
+      contents = ''
+      username = get_username
+      readme = File.join(cookbook_path, "README.md")
+      File.foreach(readme) do |line|
+        line.gsub!(/TODO: List authors/,"#{username}\n")
+        contents = contents << line
+      end
+      File.open(readme, 'w') {|f| f.write(contents) }
+      return nil
+    end
+
+    # Set the username and email in metadata.rb
+    # @param name [String] cookbook path 
+    def update_metadata(cookbook_path)
+      contents = ''
+      username = get_username
+      email    = get_useremail
+      metadata = File.join(cookbook_path, "metadata.rb")
+      File.foreach(metadata) do |line|
+        line.gsub!(/YOUR_COMPANY_NAME/,username)
+        line.gsub!(/YOUR_EMAIL/,email)
+        contents = contents << line
+      end
+      File.open(metadata, 'w') {|f| f.write(contents) }
+      return nil
+    end
+
+    # Get the username from passwd file or .gitconfig
+    # @param nil
+    def get_username()
+      username = ENV['USER']
+      passwd_user = %x(getent passwd #{username} | cut -d ':' -f 5).chomp
+      username = passwd_user if passwd_user
+      gitconfig = File.join(ENV['HOME'],".gitconfig")
+      if File.exists?(gitconfig)
+        File.foreach(gitconfig) do |line|
+          if line =~ /name.*=(.*)/i 
+            username = $1
+            break
+          end
+        end
+      end
+      username.strip
+    end
+
+    # Get the email from passwd file or .gitconfig
+    # @param nil
+    def get_useremail()
+      email = nil
+      gitconfig = File.join(ENV['HOME'],".gitconfig")
+      if File.exists?(gitconfig)
+        File.foreach(gitconfig) do |line|
+          if line =~ /email.*=(.*)/i
+            email = $1.strip
+            break
+          end
+        end
+      end
+      email
+    end
+
+    # Create the cookbook template for upload
+    # @param name [String] cookbook name
+    def create_cookbook(cookbook_name)
+      args = [ cookbook_name ]
       create = Chef::Knife::CookbookCreate.new(args)
-      # create.config[:download_directory] = "#{@github_tmp}/cb"
       create.run
     end
-  
-    def get_body_json(name)
+
+    # Create the json body with repo config for POST information
+    # @param name [String] cookbook name  
+    def get_body_json(cookbook_name)
       body = {
-        "name" => name,
+        "name" => cookbook_name,
         "description" => "We should ask for an description",
         "private" => false,
         "has_issues" => true,
@@ -106,16 +190,21 @@ module KnifeGithubCreate
       }.to_json
     end
 
+    # Get the OAuth authentication token from config or command line
+    # @param nil
     def get_github_token()
       token = locate_config_value('github_token')
-
       if token.nil? || token.empty?
         Chef::Log.error("Please specify a github token")
         exit 1
       end
-      return token
+      token
     end
 
+    # Post Get the OAuth authentication token from config or command line
+    # @param url   [String] target url (organization or user) 
+    #        body  [JSON]   json data with repo configuration
+    #        token [String] token sring
     def post_request(url, body, token)
 
       if @github_ssl_verify_mode == "verify_none"
@@ -155,7 +244,7 @@ module KnifeGithubCreate
         ui.warn "Output: " + response.body
         exit 1
       end
-      return json
+      json
     end
   end
 end

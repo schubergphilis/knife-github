@@ -122,9 +122,9 @@ class Chef
         end
 
         # is the cookbook in the cookbook_path?
-        if cookbook_path_valid?(@cookbook_name, false).nil?
+        if get_cookbook_path(@cookbook_name).nil?
           Chef::Log.error("Cookbook is not in cookbook path")
-          ui.info("HINT:  knife github clone #{@cookbook_name}")
+          ui.info("HINT: knife github clone #{@cookbook_name}")
           exit 1
         end
 
@@ -258,7 +258,7 @@ class Chef
               args.push "--freeze"
           end
           upload = Chef::Knife::CookbookUpload.new(args)
-          #upload.config[:cookbook_path] = "#{@github_tmp}/git"
+          # upload.config[:cookbook_path] = "#{@github_tmp}/git"
           # plugin will throw its own errors
           upload.run
       end
@@ -269,8 +269,8 @@ class Chef
       # @param version [String] Version
       def checkout_tag(version)
           ui.info "Checking out tag #{version}"
-          cpath = cookbook_path_valid?(@cookbook_name, false)
-          Dir.chdir(cpath);
+          cookbook_path = get_cookbook_path(@cookbook_name)
+          Dir.chdir(cookbook_path);
 		  `git checkout -b #{version}`
 		  if !$?.exitstatus == 0
 		     ui.error("Failed to checkout branch #{version} of #{@cookbook_name}")
@@ -291,9 +291,8 @@ class Chef
       # @param version [String] cookbook version
       # @param push [Bool] true is the cookbook should also be pushed
       def do_commit(version, push)
-          cpath = cookbook_path_valid?(@cookbook_path, false)
-          Dir.chdir("#{cpath}")
-          puts cpath
+          cookbook_path = get_cookbook_path(@cookbook_path)
+          Dir.chdir("#{cookbook_path}")
           output = `git commit -a -m "Deploy #{version}" 2>&1`
           if $?.exitstatus != 0
              if output !~ /nothing to commit/
@@ -318,12 +317,12 @@ class Chef
       def set_cookbook_version(version)
           return  unless get_cookbook_version() != version
           contents = ''
-          cpath = cookbook_path_valid?(@cookbook_name, false)
-          File.foreach("#{cpath}/metadata.rb") do |line|
+          cookbook_path = get_cookbook_path(@cookbook_name)
+          File.foreach("#{cookbook_path}/metadata.rb") do |line|
               line.gsub!(/(version[\t\s]+)(.*)/i,"\\1 \"#{version}\"\n")
               contents = contents << line
           end
-          File.open("#{cpath}/metadata.rb", 'w') {|f| f.write(contents) }
+          File.open("#{cookbook_path}/metadata.rb", 'w') {|f| f.write(contents) }
           return true
       end
 

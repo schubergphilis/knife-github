@@ -127,45 +127,31 @@ module KnifeGithubCreate
       email    = get_useremail
       metadata = File.join(cookbook_path, "metadata.rb")
       File.foreach(metadata) do |line|
-        line.gsub!(/YOUR_COMPANY_NAME/,username)
-        line.gsub!(/YOUR_EMAIL/,email)
+        line.gsub!(/YOUR_COMPANY_NAME/,username) if username
+        line.gsub!(/YOUR_EMAIL/,email) if email
         contents = contents << line
       end
       File.open(metadata, 'w') {|f| f.write(contents) }
       return nil
     end
 
-    # Get the username from passwd file or .gitconfig
+    # Get the username from passwd file or git config
     # @param nil
     def get_username()
       username = ENV['USER']
       passwd_user = %x(getent passwd #{username} | cut -d ':' -f 5).chomp
       username = passwd_user if passwd_user
-      gitconfig = File.join(ENV['HOME'],".gitconfig")
-      if File.exists?(gitconfig)
-        File.foreach(gitconfig) do |line|
-          if line =~ /name.*=(.*)/i 
-            username = $1
-            break
-          end
-        end
-      end
-      username.strip
+      git_user_name = %x(git config user.name).strip
+      username = git_user_name if git_user_name
+      username
     end
 
-    # Get the email from passwd file or .gitconfig
+    # Get the email from passwd file or git config
     # @param nil
     def get_useremail()
       email = nil
-      gitconfig = File.join(ENV['HOME'],".gitconfig")
-      if File.exists?(gitconfig)
-        File.foreach(gitconfig) do |line|
-          if line =~ /email.*=(.*)/i
-            email = $1.strip
-            break
-          end
-        end
-      end
+      git_user_email = %x(git config user.email).strip
+      email = git_user_email if git_user_email
       email
     end
 

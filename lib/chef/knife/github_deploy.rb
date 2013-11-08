@@ -236,13 +236,20 @@ class Chef
              major = $1
              minor = $2
              patch = $3
-             major = major.to_i + 1 if config[:major]
-             minor = minor.to_i + 1 if config[:minor]
+             if config[:major]
+               major = major.to_i + 1 
+               minor = 0 
+               patch = 0 
+             end
+             if config[:minor] 
+              minor = minor.to_i + 1 
+              patch = 0 
+             end
              patch = patch.to_i + 1 if config[:patch]
              version = "#{major}.#{minor}.#{patch}"
              Chef::Log.debug("New version is #{version}")
           else
-             Chef::Log.error("Version is in a format I cannot auto auto-update")
+             Chef::Log.error("Version is in a format I cannot auto-update")
              exit 1
           end
           version

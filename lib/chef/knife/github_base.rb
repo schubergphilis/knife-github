@@ -210,25 +210,25 @@ class Chef
               params = {'response' => 'json', 'page' => page }
               result = send_request(url, params)
               break if result.nil? || result.count < 1
-              result.each { |key|
-                if key['tags_url']
-                  tags = get_tags(key)
-                  key['tags'] = tags unless tags.nil? || tags.empty?
-                  key['latest_tag'] = get_latest_tag(tags)
-                  arr << key
-                else 
-                  arr << key 
-                end
-              }
+              result.each { |key| arr << key }
               page = page + 1
             end
+              # WE WILL REMOVE THIS, GETTING TAGS FOR EVERY REPO IS VERY SLOW!   
+              #  if key['tags_url']
+              #    tags = get_tags(key)
+              #    key['tags'] = tags unless tags.nil? || tags.empty?
+              #    key['latest_tag'] = get_latest_tag(tags)
+              #    arr << key
+              #  else 
+              #    arr << key 
+              #  end
+              #}
             arr
           end
 
           def get_tags(repo)
             params = {'response' => 'json'}
-            tags = send_request(repo['tags_url'], params)
-            tags
+            send_request(repo['tags_url'], params)
           end
 
           def get_latest_tag(tags)

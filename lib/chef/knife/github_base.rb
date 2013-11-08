@@ -29,6 +29,7 @@ class Chef
           deps do
             require 'chef/mixin/shell_out'
             require 'mixlib/versioning'
+            require 'chef/knife/github_config'
           end
 
           option :github_url,
@@ -116,7 +117,17 @@ class Chef
 
           def locate_config_value(key)
             key = key.to_sym
-            config[key] || Chef::Config[:knife][key]
+            central_config = "/etc/githubrc.rb"
+            if File.exists?(central_config)
+              begin
+                Github::Config.from_file(central_config)
+              rescue
+                Chef::Log.error("Something is wrong within your central config file: #{central_config}")
+                Chef::Log.error("You will need to fix or remove this file to continue!")
+                exit 1
+              end
+            end
+            config[key] || Chef::Config[:knife][key] || Github::Config[key]
           end
 
           def  get_repo_clone_link

@@ -53,7 +53,7 @@ class Chef
 
         #Get the github link
         git_link = get_repo_clone_link
-
+ 
         # Filter all repo information based on the tags that we can find
         if config[:fields] || config[:fieldlist]
           all_repos = get_all_repos
@@ -68,7 +68,7 @@ class Chef
           else
             cookbooks.each { |k,v|
               get_all_repos[k].nil? || get_all_repos[k][git_link].nil? ? gh_url = ui.color("Cannot find cookbook!", :red) : gh_url = get_all_repos[k][git_link]
-              get_all_repos[k].nil? || get_all_repos[k]['latest_tag'].nil? || get_all_repos[k]['latest_tag'].empty? ? gh_tag = ui.color("No tags!", :red) : gh_tag = get_all_repos[k]['latest_tag']
+              get_all_repos[k].nil? || get_all_repos[k]['tags_last'].nil? || get_all_repos[k]['tags_last'].empty? ? gh_tag = ui.color("No tags!", :red) : gh_tag = get_all_repos[k]['tags_last']
               all_repos[k] = { 'name' => k, 'latest_cb_tag' => v['versions'][0]['version'], 'git_url' => gh_url, 'latest_gh_tag' => gh_tag }
             }
           end
@@ -92,7 +92,6 @@ class Chef
         end
 
       end
-
     end
   end
 end

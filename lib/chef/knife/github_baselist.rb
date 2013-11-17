@@ -16,9 +16,6 @@
 # limitations under the License.
 #
 
-
-require 'chef/knife'
-
 class Chef
   class Knife
     module GithubBaseList

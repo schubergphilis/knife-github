@@ -17,7 +17,6 @@
 #
 
 # require 'chef/knife'
-require "knife-github/version"
 
 class Chef
   class Knife
@@ -29,7 +28,10 @@ class Chef
           deps do
             require 'chef/mixin/shell_out'
             require 'mixlib/versioning'
-            require 'chef/knife/github_config'
+            require 'knife-github/repo'
+            require 'knife-github/config'
+            require 'knife-github/version'
+            require 'knife-github/connection'
           end
 
           option :github_url,
@@ -38,7 +40,7 @@ class Chef
 
           option :github_organizations,
                  :long => "--github_org ORG:ORG",
-                 :description => "Lookup chef cookbooks in this colon-separated list of organizations",
+                 :description => "Lookup repositories in this colon-separated list of organizations",
                  :proc => lambda { |o| o.split(":") }
 
           option :github_link,
@@ -148,144 +150,77 @@ class Chef
             # Parse every org and merge all into one hash
             repos = {}
             orgs.each do |org|
-              get_repos(org).each { |repo| name = repo['name'] ; repos["#{name}"] = repo } 
+              get_org_data(org).each { |repo|
+                name = repo['name']
+                repos["#{name}"] = repo.to_hash 
+              } 
             end
             repos
           end
 
-          def get_repos(org)
-            dns_name  = get_dns_name(@github_url)
-            file_cache = "#{ENV['HOME']}/.chef/.#{dns_name.downcase}_#{org.downcase}" 
+          def get_org_data(org)
+            dns_name = get_dns_name(@github_url)
+            file = ENV['HOME'] + "/.chef/.#{dns_name}_#{org.downcase}.cache"
 
-            if File.exists?(file_cache + ".json")
-              json =  JSON.parse(File.read(file_cache + ".json"))
-              json_updated = Time.parse(json['updated_at'])
-              Chef::Log.info("#{org} - cache created at : " + json_updated.to_s)
-              repo_updated = get_org_updated_time(org)
-              Chef::Log.info("#{org} - repos updated at : " + repo_updated.to_s)
-        
-	      unless json_updated >= repo_updated 
-                # update cache file
-                create_cache_file(file_cache + ".cache", org)
-                create_cache_json(file_cache + ".json", org)
+            cache_repo_data  = get_cache_data(file)
+            github_repo_data = get_github_repo_data(org)
+      
+            github_repoList = Github::RepoList.new
+      
+            github_repo_data.each do |repo|
+              github_repoList.push(repo)
+              cache_repo = cache_repo_data.find { |k| k['name'] == repo.name }
+              if cache_repo
+                # found cache repo, update tags if latest_update is not equal
+                if repo.updated_at == cache_repo['updated_at']
+                  github_repoList.last.tags_all = cache_repo['tags_all']
+                  github_repoList.last.tags_last = cache_repo['tags_last']
+                else
+                  github_repoList.last.update_tags! 
+                end
+              else
+                # cannot find cache repo data, updating tags
+                github_repoList.last.update_tags!
               end
-            else
-              create_cache_file(file_cache + ".cache", org)
-              create_cache_json(file_cache + ".json", org)
             end
-            
-            # use cache files
-            JSON.parse(File.read(file_cache + ".cache"))
+            write_cache_data(file, github_repoList)
+            get_cache_data(file)
+          end
+          
+          def connection
+            @connection ||= GithubClient::Connection.new()
           end
 
-          def create_cache_json(file, org)
-            Chef::Log.debug("Updating the cache file: #{file}")
-            url  = @github_url + "/api/" + @github_api_version + "/orgs/" + org
-            params = {'response' => 'json'} 
-            result = send_request(url, params)
-            File.open(file, 'w') { |f| f.write(JSON.pretty_generate(result)) }
+          def write_cache_data(file, json)
+            File.open(file, 'w') { |f| f.write(json.to_pretty_json) }
           end
-
-          def create_cache_file(file, org)
-            Chef::Log.debug("Updating the cache file: #{file}")
-            result = get_repos_github(org)
-            File.open(file, 'w') { |f| f.write(JSON.pretty_generate(result)) }
+      
+          def get_cache_data(file)
+            if File.exists?(file)
+              return JSON.parse(File.read(file))
+            else
+              return JSON.parse("{}")
+            end
           end
-         
-          def get_org_updated_time(org)
-            url  = @github_url + "/api/" + @github_api_version + "/orgs/" + org
-            params = {'response' => 'json'}
-            result = send_request(url, params)
-            Time.parse(result['updated_at'])
-          end
-
-          def get_repos_github(org)
-            # Get all repo's from cache file 
-
-            # Get all repo's for the org from github
+      
+          def get_github_repo_data(org)
             arr  = []
             page = 1
-            url  = @github_url + "/api/" + @github_api_version + "/orgs/" + org + "/repos" 
+            url  = @github_url + "/api/" + @github_api_version + "/orgs/" + org + "/repos"
             while true
               params = {'response' => 'json', 'page' => page }
-              result = send_request(url, params)
+              result = connection.send_get_request(url, params)
               break if result.nil? || result.count < 1
-              result.each { |key| arr << key }
+              result.each { |key| arr << Github::Repo.new(key) }
               page = page + 1
             end
-              # WE WILL REMOVE THIS, GETTING TAGS FOR EVERY REPO IS VERY SLOW!   
-              #  if key['tags_url']
-              #    tags = get_tags(key)
-              #    key['tags'] = tags unless tags.nil? || tags.empty?
-              #    key['latest_tag'] = get_latest_tag(tags)
-              #    arr << key
-              #  else 
-              #    arr << key 
-              #  end
-              #}
-            arr
+            return arr
           end
-
-          def get_tags(repo)
-            params = {'response' => 'json'}
-            send_request(repo['tags_url'], params)
-          end
-
-          def get_latest_tag(tags)
-            return "" if tags.nil? || tags.empty?
-            tags_arr =[]
-            tags.each do |tag|
-              tags_arr.push(Mixlib::Versioning.parse(tag['name'])) if tag['name'] =~ /^(\d*)\.(\d*)\.(\d*)$/
-            end
-            return "" if tags_arr.nil? || tags_arr.empty?
-            return tags_arr.sort.last.to_s
-          end
-
+      
           def get_dns_name(url)
             url = url.downcase.gsub("http://","") if url.downcase.start_with?("http://")
             url = url.downcase.gsub("https://","") if url.downcase.start_with?("https://")
-            url
-          end
-
-          def send_request(url, params = {})
-            unless params.empty?
-              params_arr = []
-              params.sort.each { |elem|
-                params_arr << elem[0].to_s + '=' + CGI.escape(elem[1].to_s).gsub('+', '%20').gsub(' ','%20')
-              }
-              data = params_arr.join('&')
-              url = "#{url}?#{data}" 
-            end
-
-            if @github_ssl_verify_mode == "verify_none"
-              config[:ssl_verify_mode] = :verify_none
-            elsif @github_ssl_verify_mode == "verify_peer"
-              config[:ssl_verify_mode] = :verify_peer
-            end
-
-            Chef::Log.debug("URL: " + url.to_s)
-
-            uri = URI.parse(url)
-            req_body = Net::HTTP::Get.new(uri.request_uri)
-            request = Chef::REST::RESTRequest.new("GET", uri, req_body, headers={})
- 
-            response = request.call
-          
-            unless response.is_a?(Net::HTTPOK) then
-              puts "Error #{response.code}: #{response.message}"
-              puts JSON.pretty_generate(JSON.parse(response.body))
-              puts "URL: #{url}"
-              exit 1
-            end
-
-            begin
-              json = JSON.parse(response.body)
-            rescue
-              ui.warn "The result on the RESTRequest is not in json format"
-              ui.warn "Output: " + response.body
-              exit 1
-            end
-            return json
+            url.downcase
           end
 
           def get_clone(url, cookbook)

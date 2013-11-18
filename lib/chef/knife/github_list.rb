@@ -18,10 +18,9 @@
 
 require 'chef/knife'
 
-class Chef
-  class Knife
+module KnifeGithubList
 
-    class GithubList < Knife
+  class GithubList < Chef::Knife
 
       deps do
         require 'chef/knife/github_base'
@@ -94,6 +93,5 @@ class Chef
 
       end
 
-    end
   end
 end

@@ -18,9 +18,9 @@
 
 require 'chef/knife'
 
-class Chef
-  class Knife
-    class GithubCompare < Knife
+module KnifeGithubCompare
+  # Compare cookbooks in chef with those in the repository
+  class GithubCompare < Chef::Knife
 
       deps do
         require 'chef/knife/github_base'
@@ -92,6 +92,5 @@ class Chef
         end
 
       end
-    end
-  end
+   end
 end

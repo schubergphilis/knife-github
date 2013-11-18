@@ -15,22 +15,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# ---------------------------------------------------------------------------- #
-# Abstract
-# ---------------------------------------------------------------------------- #
-# This code is intended to help you cleaning up your locate repo's.
-# It will check if your repo if insync with the github and will not touch if
-# this is not the case. Then it will check if you have any branches local
-# and not on the github.
-#
-# If it cannot find any uncommitted changes, it will safely remove your repo.
-# It's good practice to cleanup and re-download repos because this way they 
-# can move from organization to organization.
-# ---------------------------------------------------------------------------- #
-#
 require 'chef/knife'
 
 module KnifeGithubCleanup
+  # This module is intended to help you cleaning up your locate repo's.
+  # It will check if your repo if insync with the github and will not touch if
+  # this is not the case. Then it will check if you have any branches local
+  # and not on the github.
+  #
+  # If it cannot find any uncommitted changes, it will safely remove your repo.
+  # It's good practice to cleanup and re-download repos because this way they 
+  # can move from organization to organization.
   class GithubCleanup < Chef::Knife
 
   deps do

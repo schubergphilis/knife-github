@@ -18,10 +18,11 @@
 
 require 'chef/knife'
 
-class Chef
-  class Knife
+  module KnifeGitHubClone
 
-    class GithubClone < Knife
+    # Clones a cookbook version to your local cookbooks directory
+    #
+    class GithubClone < Chef::Knife
 
       deps do
         require 'chef/knife/github_base'
@@ -101,6 +102,5 @@ class Chef
         end
       end
 
-    end
   end
 end

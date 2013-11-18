@@ -18,8 +18,7 @@
 
 require 'chef/knife'
 
-class Chef
-  class Knife
+module KnifeGithubPin
 
     # Pin a specific cookbook version to an environment
     # 
@@ -28,7 +27,7 @@ class Chef
     # In some respects does duplicate some functionality that can be found
     # in spork but, I want a single set of tools that would help people
     # to get quickly up to speed with using chef in an industrialised environment
-    class GithubPin < Knife
+    class GithubPin < Chef::Knife
       deps do
         require 'chef/knife/github_base'
         require 'chef/knife/core/object_loader'
@@ -53,8 +52,9 @@ class Chef
         @version = nil
         @env     = nil
  
-        if @cookbook_name.empty?
+        if @cookbook_name.nil?
            Chef::Log.error("You must specify a cookbook name to use this module")
+           exit 1;
         end
 
         # Parameter 2 can be a version or an environment (if version is not given) or nothing
@@ -133,6 +133,5 @@ class Chef
         @env
       end
 
-    end
   end
 end

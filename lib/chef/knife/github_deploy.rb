@@ -1,58 +1,57 @@
 require 'chef/knife'
 
-class Chef
-  class Knife
-    # Implements the knife github deploy function
-    # @author:: Ian Southam (<isoutham@schubergphilis.com>)
-    # Copyright:: Copyright (c) 2013 Ian Southam.
-    # This code is specific to our company workflow
-    #
-    # == Overview
-    # All modes presume you have used github download to download a cookbook or
-    # are creating a new cookbook
-    #
-    # === Examples
-    # Deploy a development version of cookbook to your chef server
-    #    knife github deploy cookbook_name 
-    #    
-    # Deploy a release version of cookbook to your chef server
-    #    knife github deploy cookbook_name -f
-    #
-    # === Options
-    # -f Operate in final release mode
-    # -p Update the patch component of the version
-    # -m Update the minor component of the version
-    # -M Update the minor component of the version
-    # 
-    # == Operation Modes
-    # Development (default)
-    #
-    # This will take a cookbook name
-    # Do some basic version checks (if the current cookbook is frozen) and
-    # upload it
-    #
-    # If the cookbook is frozen it will force you to choose a new version
-    # and update the metadata accordingly
-    #
-    # Release (-f)
-    #
-    # You will be forced to select a new version.
-    # You can choose via the options whether to increment the Major/minor or patch
-    # revision numbers
-    # The version will be tagged
-    # Uploaded to the Chef server and frozen
-    #
-    # == Version numbers
-    #
-    # You can choose a specific version number by specifying it on the command
-    # line.
-    #
-    # If you do not specify a version, the version will be the version in your
-    # cookbook's metadata
-    #
-    # A warning is issued if the version is lower than the version in github
-    #
-    class GithubDeploy < Knife
+module KnifeGithubDeploy
+  # Implements the knife github deploy function
+  # @author:: Ian Southam (<isoutham@schubergphilis.com>)
+  # Copyright:: Copyright (c) 2013 Ian Southam.
+  # This code is specific to our company workflow
+  #
+  # == Overview
+  # All modes presume you have used github download to download a cookbook or
+  # are creating a new cookbook
+  #
+  # === Examples
+  # Deploy a development version of cookbook to your chef server
+  #    knife github deploy cookbook_name 
+  #    
+  # Deploy a release version of cookbook to your chef server
+  #    knife github deploy cookbook_name -f
+  #
+  # === Options
+  # -f Operate in final release mode
+  # -p Update the patch component of the version
+  # -m Update the minor component of the version
+  # -M Update the minor component of the version
+  # 
+  # == Operation Modes
+  # Development (default)
+  #
+  # This will take a cookbook name
+  # Do some basic version checks (if the current cookbook is frozen) and
+  # upload it
+  #
+  # If the cookbook is frozen it will force you to choose a new version
+  # and update the metadata accordingly
+  #
+  # Release (-f)
+  #
+  # You will be forced to select a new version.
+  # You can choose via the options whether to increment the Major/minor or patch
+  # revision numbers
+  # The version will be tagged
+  # Uploaded to the Chef server and frozen
+  #
+  # == Version numbers
+  #
+  # You can choose a specific version number by specifying it on the command
+  # line.
+  #
+  # If you do not specify a version, the version will be the version in your
+  # cookbook's metadata
+  #
+  # A warning is issued if the version is lower than the version in github
+  #
+  class GithubDeploy < Chef::Knife
       deps do
         require 'chef/knife/github_base'
         include Chef::Knife::GithubBase
@@ -333,6 +332,5 @@ class Chef
           return true
       end
 
-    end
   end
 end

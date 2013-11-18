@@ -18,10 +18,7 @@
 
 require 'chef/knife'
 
-class Chef
-  class Knife
-
-    class GithubDiff < Knife
+    module GithubDiff
     # Implements a diff function between your downloaded copy from git and what is in the Chef Server
     # 
     # By default, it expects that you have already done knife github download COOKBOOK
@@ -31,6 +28,7 @@ class Chef
     # You can also diff a cookbook against the github version bu using the -g option
     # 
     # You can also optionally give a version on the command line
+    class GithubDiff < Chef::Knife
 
       deps do
         require 'chef/knife/github_base'
@@ -150,7 +148,5 @@ class Chef
         end
         return version
       end 
-
-    end
   end
 end

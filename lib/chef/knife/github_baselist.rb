@@ -22,36 +22,36 @@ class Chef
 
       def self.included(includer)
         includer.class_eval do
-    
+
           option :fields,
-                 :long => "--fields 'NAME, NAME'",
-                 :description => "The fields to output, comma-separated"
-      
+            :long => "--fields 'NAME, NAME'",
+            :description => "The fields to output, comma-separated"
+
           option :fieldlist,
-                 :long => "--fieldlist",
-                 :description => "The available fields to output/filter",
-                 :boolean => true
-      
+            :long => "--fieldlist",
+            :description => "The available fields to output/filter",
+            :boolean => true
+
           option :noheader,
-                 :long => "--noheader",
-                 :description => "Removes header from output",
-                 :boolean => true
-      
+            :long => "--noheader",
+            :description => "Removes header from output",
+            :boolean => true
+
           def display_info(data, columns, match = [])
             object_list = []
-      
+
             if config[:fields]
               config[:fields].split(',').each { |n| object_list << ui.color(("#{n}").capitalize.strip, :bold) }
             else
               columns.each { |c| r = c.split(","); object_list << ui.color(("#{r.last}").strip, :bold) }
             end
-      
+
             col = object_list.count
             object_list = [] if config[:noheader]
-      
+
             data.each do |k,v|
               if config[:fields]
-                 config[:fields].downcase.split(',').each { |n| object_list << ((v["#{n}".strip]).to_s || 'n/a') }
+                config[:fields].downcase.split(',').each { |n| object_list << ((v["#{n}".strip]).to_s || 'n/a') }
               else
                 color = :white
                 if !match.empty? && !config[:all]
@@ -59,25 +59,25 @@ class Chef
                   if matches.uniq.count == 1
                     next if config[:mismatch]
                   else
-                    color = :yellow 
+                    color = :yellow
                   end
                 end
                 columns.each { |c|  r = c.split(","); object_list << ui.color((v["#{r.first}"]).to_s, color) || 'n/a' }
               end
             end
-      
+
             puts ui.list(object_list, :uneven_columns_across, col)
             display_object_fields(data) if locate_config_value(:fieldlist)
           end
-      
+
           def display_object_fields(object)
             exit 1 if object.nil? || object.empty?
             object_fields = [
               ui.color('Key', :bold),
               ui.color('Type', :bold),
               ui.color('Value', :bold)
-             ]
-             object.first.each do |n|
+            ]
+            object.first.each do |n|
               if n.class == Hash
                 n.keys.each do |k,v|
                   object_fields << ui.color(k, :yellow, :bold)

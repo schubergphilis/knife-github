@@ -24,8 +24,6 @@ module KnifeGithubSearch
     deps do
       require 'chef/knife/github_base'
       include Chef::Knife::GithubBase
-      require 'chef/knife/github_baselist'
-      include Chef::Knife::GithubBaseList
     end
       
     banner "knife github search STRING (options)"
@@ -80,8 +78,7 @@ module KnifeGithubSearch
 
       url  = @github_url + "/api/" + @github_api_version + "/legacy/repos/search/" + query
       Chef::Log.debug("URL: #{url}")
-     
-      send_request(url)
+      connection.send_get_request(url, params = {}) 
     end
 
   end

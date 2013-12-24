@@ -16,24 +16,37 @@
 # limitations under the License.
 #
 
-
-#
-#
-#  BE AWARE THIS COMMAND IS STILL UNDER HEAVY DEVELOPMENT!
-#
-#
 require 'chef/knife'
 
 module KnifeGithubCreate
   class GithubCreate < Chef::Knife
-
+    # Implements the knife github repo create function
+    #
+    # == Overview
+    # The command will create a empty cookbook structure and it will commit this one into the github.
+    #
+    # === Examples
+    # Create a new cookbook:
+    #    knife github create <name> <here you give your cookbook description>
+    #
+    # Deploy a release version of cookbook to your chef server
+    #    knife github deploy cookbook_name -f
+    #
+    # === Options
+    # -t --github_token		Authentication token for the github.
+    # -U --github_user_repo	Create the cookbook in the user environment.
+    #
+    # == Operation Modes
+    # Final (default)
+    #
+    
     deps do
       require 'chef/knife/github_base'
       include Chef::Knife::GithubBase
       require 'chef/mixin/shell_out'
     end
       
-    banner "knife github create STRING (options)"
+    banner "knife github create <name> <description> (options)"
     category "github"
 
     option :github_token,
@@ -58,6 +71,8 @@ module KnifeGithubCreate
 
       # Get the name_args from the command line
       name = name_args.first
+      name_args.shift
+      desc = name_args.join(" ")
 
       # Get the organization name from config
       org = locate_config_value('github_organizations').first
@@ -66,7 +81,12 @@ module KnifeGithubCreate
         Chef::Log.error("Please specify a repository name")
         exit 1
       end 
-      
+       
+      if desc.nil? || desc.empty?
+        Chef::Log.error("Please specify a repository description")
+        exit 1
+      end
+
       if config[:github_user_repo]
         url = @github_url + "/api/" + @github_api_version + "/user/repos"
         Chef::Log.debug("Creating repository in user environment")
@@ -75,20 +95,20 @@ module KnifeGithubCreate
         Chef::Log.debug("Creating repository in organization: #{org}")
       end
 
+      @github_tmp = locate_config_value("github_tmp") || '/var/tmp/gitcreate'
+      @github_tmp = "#{@github_tmp}#{Process.pid}"
+
       # Get token information
       token = get_github_token()
 
       # Get body data for post
-      body = get_body_json(name)
+      body = get_body_json(name, desc)
 
-      # Creating the repository 
-      Chef::Log.debug("Creating the github repository")
-      repo = post_request(url, body, token)
-
+      # Creating the local repository 
       Chef::Log.debug("Creating the local repository based on template")
-      create_cookbook(name)
+      create_cookbook(name, @github_tmp)
 
-      cookbook_path = get_cookbook_path(name)
+      cookbook_path = File.join(@github_tmp, name)
 
       # Updating README.md if needed.
       update_readme(cookbook_path)
@@ -96,8 +116,23 @@ module KnifeGithubCreate
       # Updateing metadata.rb if needed.
       update_metadata(cookbook_path)
 
+      # Creating the github repository
+      Chef::Log.debug("Creating the github repository")
+      repo = post_request(url, body, token)
       github_ssh_url = repo['ssh_url']
-       
+
+      Chef::Log.debug("Commit and push local repository")      
+      # Initialize the local git repo
+      git_commit_and_push(cookbook_path, github_ssh_url)
+
+      Chef::Log.debug("Removing temp files")
+      FileUtils.remove_entry(@github_tmp)
+    end
+ 
+    # Set the username in README.md
+    # @param cookbook_path [String] cookbook path
+    #        github_ssh_url [String] github ssh url from repo
+    def git_commit_and_push(cookbook_path, github_ssh_url)
       shell_out!("git init", :cwd => cookbook_path )
       shell_out!("git add .", :cwd => cookbook_path ) 
       shell_out!("git commit -m 'creating initial cookbook structure from the knife-github plugin' ", :cwd => cookbook_path ) 
@@ -157,18 +192,20 @@ module KnifeGithubCreate
 
     # Create the cookbook template for upload
     # @param name [String] cookbook name
-    def create_cookbook(cookbook_name)
-      args = [ cookbook_name ]
+    #        tmp  [String] temp location
+    def create_cookbook(name, tmp)
+      args = [ name ]
       create = Chef::Knife::CookbookCreate.new(args)
+      create.config[:cookbook_path] = tmp
       create.run
     end
 
     # Create the json body with repo config for POST information
     # @param name [String] cookbook name  
-    def get_body_json(cookbook_name)
+    def get_body_json(cookbook_name, description="Please fill in the description.")
       body = {
         "name" => cookbook_name,
-        "description" => "We should ask for an description",
+        "description" => description,
         "private" => false,
         "has_issues" => true,
         "has_wiki" => true,

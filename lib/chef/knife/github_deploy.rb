@@ -21,7 +21,7 @@ module KnifeGithubDeploy
   # -f Operate in final release mode
   # -p Update the patch component of the version
   # -m Update the minor component of the version
-  # -M Update the minor component of the version
+  # -M Update the major component of the version
   # 
   # == Operation Modes
   # Development (default)

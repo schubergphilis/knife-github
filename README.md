@@ -3,21 +3,35 @@ knife-github
 
 Chef knife plugin to interact with the github enterprise appliance.
 
-Attributes
+Configurations
 ==========
 
-You can configure the following attributes within your knife.rb
+### Central Configuration.
+When working on customer admin machines, it's recommended to used an central configuration file.
+This file should be created in: /etc/githubrc.rb and can contain any attribute in the following structure:
 
-    knife[:github_url]             = 'https://github.company.lan'  
-    knife[:github_organizations]   = [ 'customer-cookbooks', 'central-cookbooks' ] 
-    knife[:github_link]            = 'ssh' 
+    github_url			"https://github.schubergphilis.com"
+    github_link             	"ssh"
+    github_organizations    	[ "TLA-Cookbooks", "SBP-Cookbooks" ]
+
+Please note: these options are recommended for the central config file:
+
+### Personal Configuration.
+You can also configure attributes within your ~/.chef/knife.rb in the following structure:
+
+    knife[:github_token]           = '28374928374928374923874923842'  
     knife[:github_api_version]     = 'v3'  
     knife[:github_ssl_verify_mode] = 'verify_none'
 
+Please note: these settings will overwrite the central settings. 
+In a perfect world, your personal configuration file only contains your token information.
+
 ###### github_url
-This will be the URL to your local github appliance.  
+This will be the URL to your (personal) github enterprise appliance.
 Here you can also use the github.com address if you don't have an internal appliance.
 
+Attributes
+==========
 ###### github_organizations
 Here you specify the organizations that you want to taget when searching for cookbooks.  
 The first entry will have priority over the other entries.
@@ -37,7 +51,7 @@ Other
 =====
 
 Cache files will be created into the: ~/.chef directory.
-We use cache files to offload the api calls and increase the performance for additional executions.  
+We use cache files to offload the api calls and increase the performance for repetitive executions
 Updated to any repo inside the organization will cause the cache files to update.  
 But in case of any problems, the cache files can be safely deleted.
 

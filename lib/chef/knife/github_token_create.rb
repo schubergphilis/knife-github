@@ -80,42 +80,7 @@ module KnifeGithubTokenCreate
         update_knife_config(token)
       end
 
-      puts "this is your token: #{token}"
-      exit 0
-
-
-      @github_tmp = locate_config_value("github_tmp") || '/var/tmp/gitcreate'
-      @github_tmp = "#{@github_tmp}#{Process.pid}"
-
-      # Get token information
-      token = get_github_token()
-
-      # Get body data for post
-      body = get_body_json(name, desc)
-
-      # Creating the local repository 
-      Chef::Log.debug("Creating the local repository based on template")
-      create_cookbook(name, @github_tmp)
-
-      cookbook_path = File.join(@github_tmp, name)
-
-      # Updating README.md if needed.
-      update_readme(cookbook_path)
- 
-      # Updateing metadata.rb if needed.
-      update_metadata(cookbook_path)
-
-      # Creating the github repository
-      Chef::Log.debug("Creating the github repository")
-      repo = post_request(url, body, token)
-      github_ssh_url = repo['ssh_url']
-
-      Chef::Log.debug("Commit and push local repository")      
-      # Initialize the local git repo
-      git_commit_and_push(cookbook_path, github_ssh_url)
-
-      Chef::Log.debug("Removing temp files")
-      FileUtils.remove_entry(@github_tmp)
+      puts "Finished updating your token. Using key:#{token}"
     end
  
     # Updates the knife configuration with the token information inside ~/.chef/knife.rb
@@ -140,20 +105,6 @@ module KnifeGithubTokenCreate
       end
       File.open(config, 'w') {|f| f.write(contents) }
       return true
-    end
-
-
-    # Create the json body with repo config for POST information
-    # @param name [String] cookbook name  
-    def get_body_json(cookbook_name, description="Please fill in the description.")
-      body = {
-        "name" => cookbook_name,
-        "description" => description,
-        "private" => false,
-        "has_issues" => true,
-        "has_wiki" => true,
-        "has_downloads" => true
-      }.to_json
     end
 
     # Get the OAuth authentication token from config or command line

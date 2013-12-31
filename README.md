@@ -49,7 +49,7 @@ The plugin is using the underlying knife http implementation, hence it will have
 Currently the options are: <tt>verify_peer</tt> <tt>verify_none</tt>   
 
 ###### github_token \<optional\>
-Token information is required when creating and deleting github repositories.
+Token information is required when creating and deleting github repositories.  
 With the command <tt>knife github token create</tt> you are able to create token information.
 
 

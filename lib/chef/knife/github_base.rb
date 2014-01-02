@@ -16,7 +16,11 @@
 # limitations under the License.
 #
 
-# require 'chef/knife'
+require 'knife-github/repo'
+require 'knife-github/config'
+require 'knife-github/version'
+require 'knife-github/connection'
+require 'mixlib/versioning'
 
 class Chef
   class Knife
@@ -24,15 +28,6 @@ class Chef
 
       def self.included(includer)
         includer.class_eval do
-
-          deps do
-            require 'chef/mixin/shell_out'
-            require 'mixlib/versioning'
-            require 'knife-github/repo'
-            require 'knife-github/config'
-            require 'knife-github/version'
-            require 'knife-github/connection'
-          end
 
           option :github_url,
                  :long => "--github_url URL",

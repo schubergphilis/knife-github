@@ -19,5 +19,6 @@ Gem::Specification.new do |s|
   s.require_paths     = ["lib"]
   s.license           = 'Apache 2.0'
   s.add_dependency "mixlib-versioning", ">= 1.0.0"
+  s.add_dependency "ruby-termios", ">= 0.9.6"
   s.add_dependency "chef", ">= 10.0.0"
 end

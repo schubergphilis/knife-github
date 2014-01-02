@@ -10,11 +10,11 @@ Configurations
 When working on customer admin machines, it's recommended to used an central configuration file.
 This file should be created in: /etc/githubrc.rb and can contain any attribute in the following structure:
 
-    github_url			"https://github.schubergphilis.com"
+    github_url			        "https://github.schubergphilis.com"
     github_link             	"ssh"
     github_organizations    	[ "TLA-Cookbooks", "SBP-Cookbooks" ]
 
-Please note: these options are recommended for the central config file:
+Please note: these options are recommended for the central config file.
 
 ### Personal Configuration.
 You can also configure attributes within your ~/.chef/knife.rb in the following structure:
@@ -26,12 +26,13 @@ You can also configure attributes within your ~/.chef/knife.rb in the following 
 Please note: these settings will overwrite the central settings. 
 In a perfect world, your personal configuration file only contains your token information.
 
+Attributes
+==========
+
 ###### github_url
 This will be the URL to your (personal) github enterprise appliance.
 Here you can also use the github.com address if you don't have an internal appliance.
 
-Attributes
-==========
 ###### github_organizations
 Here you specify the organizations that you want to taget when searching for cookbooks.  
 The first entry will have priority over the other entries.
@@ -46,6 +47,11 @@ The current and default version of the api is <tt>v3</tt> but this will allow yo
 ###### github_ssl_verify_mode \<optional\>
 The plugin is using the underlying knife http implementation, hence it will have the same options to handle ssl.  
 Currently the options are: <tt>verify_peer</tt> <tt>verify_none</tt>   
+
+###### github_token \<optional\>
+Token information is required when creating and deleting github repositories.  
+With the command <tt>knife github token create</tt> you are able to create token information.
+
 
 Other
 =====

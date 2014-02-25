@@ -24,6 +24,8 @@ module KnifeGithubSearch
     deps do
       require 'chef/knife/github_base'
       include Chef::Knife::GithubBase
+      require 'chef/knife/github_baselist'
+      include Chef::Knife::GithubBaseList
     end
       
     banner "knife github search STRING (options)"

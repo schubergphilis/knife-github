@@ -38,7 +38,7 @@ module KnifeGithubTokenCreate
     #
     
     deps do
-      require 'knife-github/password'
+      require 'highline'
       require 'chef/knife/github_base'
       include Chef::Knife::GithubBase
       require 'chef/mixin/shell_out'
@@ -129,7 +129,7 @@ module KnifeGithubTokenCreate
       Chef::Log.debug("Validating token information for user: #{username}.")
 
       params[:username] = username
-      params[:password] = Github::Password.get( "Please enter github password for #{username} :" )
+      params[:password] = HighLine.new.ask("Please enter github password for #{username} :") { |q| q.echo = "x" }
       params[:action]   = "GET"
 
       token_key = nil

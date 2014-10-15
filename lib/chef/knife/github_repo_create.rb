@@ -69,7 +69,6 @@ module KnifeGithubRepoCreate
       # Get the name_args from the command line
       name = name_args.first
       name_args.shift
-      desc = name_args.join(" ")
 
       # Get the organization name from config
       org = locate_config_value('github_organizations').first
@@ -79,10 +78,8 @@ module KnifeGithubRepoCreate
         exit 1
       end 
        
-      if desc.nil? || desc.empty?
-        Chef::Log.error("Please specify a repository description")
-        exit 1
-      end
+      desc = get_repo_description
+      type = get_repo_type
 
       if config[:github_user_repo]
         url = @github_url + "/api/" + @github_api_version + "/user/repos"
@@ -102,8 +99,7 @@ module KnifeGithubRepoCreate
       body = get_body_json(name, desc)
 
       # Creating the local repository or using existing one.
-      cookbook_dir = ""
-      cookbook_dir = get_cookbook_path(name)
+      cookbook_dir = get_cookbook_path(name) || ""
 
       if File.exists?(cookbook_dir)
         Chef::Log.debug("Using local repository from #{cookbook_dir}")
@@ -119,16 +115,13 @@ module KnifeGithubRepoCreate
 
         puts "Finished creating #{name} and uploading #{cookbook_dir}"
       else
-        Chef::Log.debug("Creating the local repository based on template")
-        create_cookbook(name, @github_tmp)
+        Chef::Log.debug("Creating the repository based on #{type} template")
+        create_cookbook(name, type, @github_tmp)
   
         cookbook_dir = File.join(@github_tmp, name)
   
-        # Updating README.md if needed.
-        update_readme(cookbook_dir)
-   
-        # Updateing metadata.rb if needed.
-        update_metadata(cookbook_dir)
+        # Updateing template information if needed.
+        update_template_files(name, cookbook_dir)
   
         # Creating the github repository
         Chef::Log.debug("Creating the github repository")
@@ -144,7 +137,55 @@ module KnifeGithubRepoCreate
         puts "Finished creating and uploading #{name}"
       end
     end
+
  
+    # User selection on repo description
+    # @return [string]
+    def get_repo_description
+      question = "\nPlease enter a description for the repository.\n"
+      question += "Description : "
+
+      desc = input question
+      if desc.nil? || desc.empty?
+        Chef::Log.error("Please enter a repository description")
+        get_repo_description
+      end
+      desc
+    end
+
+    # User selection on repo type 
+    # @return [string]
+    def get_repo_type
+      question = "\nPlease select the repository type that you want to create.\n"
+      question += "  1 - Empty\n"
+      question += "  2 - Cookbook Application\n"
+      question += "  3 - Cookbook Wrapper\n"
+      question += "  4 - Cookbook Role\n"
+      question += "Type: "
+
+      type = input question
+      case type
+        when '1'
+          return 'empty'
+        when '2'
+          return "application"
+        when '3'
+          return "wrapper"
+        when '4'
+          return "role"
+        else
+          Chef::Log.error("Please select 1-4 to continue.")
+          get_repo_type
+      end
+    end
+
+    # Read the commandline input and return the input
+    # @param prompt [String] info to prompt to user
+    def input(prompt="", newline=false)
+      prompt += "\n" if newline
+      Readline.readline(prompt, true).squeeze(" ").strip
+    end
+
     # Set the username in README.md
     # @param cookbook_path [String] cookbook path
     #        github_ssh_url [String] github ssh url from repo
@@ -161,33 +202,28 @@ module KnifeGithubRepoCreate
       shell_out!("git push -u origin master", :cwd => cookbook_path) 
     end
 
-    # Set the username in README.md
+    # Update all template files with the right information
     # @param name [String] cookbook path    
-    def update_readme(cookbook_path)
-      contents = ''
-      username = get_username
-      readme = File.join(cookbook_path, "README.md")
-      File.foreach(readme) do |line|
-        line.gsub!(/TODO: List authors/,"#{username}\n")
-        contents = contents << line
+    def update_template_files(name, cookbook_path)
+      files = Dir.glob("#{cookbook_path}/**/*").select{ |e| File.file? e }
+      user    = get_username || "Your Name" 
+      email   = get_useremail || "Your Email"
+      company = "Schuberg Philis"
+      year    = Time.now.year
+      date    = Time.now
+      files.each do |file|
+        contents = ""
+        File.foreach(file) do |line|
+          line.gsub!(/COOKBOOK/, name)
+          line.gsub!(/COMPANY/, company)
+          line.gsub!(/NAME/, user)
+          line.gsub!(/EMAIL/, email)
+          line.gsub!(/YEAR/, year.to_s)
+          line.gsub!(/DATE/, date.to_s)
+          contents += line
+        end
+        File.open(file, 'w') {|f| f.write(contents) }
       end
-      File.open(readme, 'w') {|f| f.write(contents) }
-      return nil
-    end
-
-    # Set the username and email in metadata.rb
-    # @param name [String] cookbook path 
-    def update_metadata(cookbook_path)
-      contents = ''
-      username = get_username
-      email    = get_useremail
-      metadata = File.join(cookbook_path, "metadata.rb")
-      File.foreach(metadata) do |line|
-        line.gsub!(/YOUR_COMPANY_NAME/,username) if username
-        line.gsub!(/YOUR_EMAIL/,email) if email
-        contents = contents << line
-      end
-      File.open(metadata, 'w') {|f| f.write(contents) }
       return nil
     end
 
@@ -213,12 +249,11 @@ module KnifeGithubRepoCreate
 
     # Create the cookbook template for upload
     # @param name [String] cookbook name
+    #        type [String] type of cookbook
     #        tmp  [String] temp location
-    def create_cookbook(name, tmp)
-      args = [ name ]
-      create = Chef::Knife::CookbookCreate.new(args)
-      create.config[:cookbook_path] = tmp
-      create.run
+    def create_cookbook(name, type, tmp)
+      target = File.join(tmp, name)
+      shell_out!("git clone git://github.schubergphilis.com/toolkit/chef_template_#{type} #{target}") # , :cwd => cookbook_path)
     end
 
     # Create the json body with repo config for POST information

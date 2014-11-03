@@ -41,6 +41,7 @@ module KnifeGithubRepoCreate
       require 'chef/knife/github_base'
       include Chef::Knife::GithubBase
       require 'chef/mixin/shell_out'
+      require 'readline'
     end
       
     banner "knife github repo create <name> <description> (options)"
@@ -121,7 +122,7 @@ module KnifeGithubRepoCreate
         cookbook_dir = File.join(@github_tmp, name)
   
         # Updateing template information if needed.
-        update_template_files(name, cookbook_dir)
+        update_template_files(name, cookbook_dir, desc)
   
         # Creating the github repository
         Chef::Log.debug("Creating the github repository")
@@ -142,8 +143,7 @@ module KnifeGithubRepoCreate
     # User selection on repo description
     # @return [string]
     def get_repo_description
-      question = "\nPlease enter a description for the repository.\n"
-      question += "Description : "
+      question = "\nPlease enter a description for the repository: "
 
       desc = input question
       if desc.nil? || desc.empty?
@@ -181,9 +181,11 @@ module KnifeGithubRepoCreate
 
     # Read the commandline input and return the input
     # @param prompt [String] info to prompt to user
-    def input(prompt="", newline=false)
+ 
+   $stdout.sync = false
+    def input(prompt="", newline=true)
       prompt += "\n" if newline
-      Readline.readline(prompt, true).squeeze(" ").strip
+      Readline.readline(prompt).squeeze(" ").strip
     end
 
     # Set the username in README.md
@@ -204,7 +206,7 @@ module KnifeGithubRepoCreate
 
     # Update all template files with the right information
     # @param name [String] cookbook path    
-    def update_template_files(name, cookbook_path)
+    def update_template_files(name, cookbook_path, description)
       files = Dir.glob("#{cookbook_path}/**/*").select{ |e| File.file? e }
       user    = get_username || "Your Name" 
       email   = get_useremail || "Your Email"
@@ -214,6 +216,7 @@ module KnifeGithubRepoCreate
       files.each do |file|
         contents = ""
         File.foreach(file) do |line|
+          line.gsub!(/DESCRIPTION/, description)
           line.gsub!(/COOKBOOK/, name)
           line.gsub!(/COMPANY/, company)
           line.gsub!(/NAME/, user)
@@ -253,7 +256,17 @@ module KnifeGithubRepoCreate
     #        tmp  [String] temp location
     def create_cookbook(name, type, tmp)
       target = File.join(tmp, name)
-      shell_out!("git clone git://github.schubergphilis.com/toolkit/chef_template_#{type} #{target}") # , :cwd => cookbook_path)
+      template_org = locate_config_value("github_template_org")
+      if template_org.nil? || template_org.empty?
+        Chef::Log.fatal("Cannot find github_template_org within your configuration")  
+      else
+
+        github_url = @github_url.gsub('http://', 'git://') if @github_url =~ /^http:\/\/.*$/
+        github_url = @github_url.gsub('https://', 'git://') if @github_url =~ /^https:\/\/.*$/
+ 
+        template_path = File.join(github_url, template_org, "chef_template_#{type}.git") 
+        shell_out!("git clone #{template_path} #{target}") # , :cwd => cookbook_path)
+      end
     end
 
     # Create the json body with repo config for POST information

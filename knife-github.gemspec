@@ -18,7 +18,8 @@ Gem::Specification.new do |s|
   s.executables       = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths     = ["lib"]
   s.license           = 'Apache 2.0'
-  s.add_dependency "mixlib-versioning", ">= 1.0.0"
-  s.add_dependency "highline", ">= 1.6.19"
-  s.add_dependency "chef", ">= 10.0.0"
+  s.add_dependency 'mixlib-versioning', '>= 1.0.0'
+  s.add_dependency 'highline', '>= 1.6.19'
+  s.add_dependency 'rb-readline', '~> 0.5.1'
+  s.add_dependency 'chef', '>= 10.0.0'
 end

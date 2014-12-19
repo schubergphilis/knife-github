@@ -88,12 +88,18 @@ class Chef
           end
 
           def check_gem_version
-            url  = 'http://rubygems.org/api/v1/gems/knife-github.json'
-            proxy = @github_proxy
+            url   = 'http://rubygems.org/api/v1/gems/knife-github.json'
+            proxy = locate_config_value("github_proxy") 
             if proxy.nil?
               result = `curl -L -s #{url}`
+              Chef::Log.debug("removing proxy in glogal git config")
+              shell_out!("git config --global --unset http.proxy")
+              shell_out!("git config --global --unset https.proxy")
             else
-              result = `curl -proxy #{proxy} -L -s #{url}`
+              Chef::Log.debug("Putting proxy in glogal git config")
+              shell_out!("git config --global http.proxy #{proxy}")
+              shell_out!("git config --global https.proxy #{proxy}")
+              result = `curl --proxy #{proxy} -L -s #{url}`
             end
             begin
               json = JSON.parse(result)
@@ -289,7 +295,6 @@ class Chef
               end
               version
           end
-
         end
       end
     end

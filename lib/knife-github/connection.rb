@@ -16,12 +16,6 @@ module GithubClient
         url = "#{url}?#{data}"
       end
 
-      #if @github_ssl_verify_mode == "verify_none"
-      #  config[:ssl_verify_mode] = :verify_none
-      #elsif @github_ssl_verify_mode == "verify_peer"
-      #  config[:ssl_verify_mode] = :verify_peer
-      #end
-
       Chef::Log.debug("URL: " + url.to_s)
 
       uri = URI.parse(url)
@@ -65,10 +59,12 @@ module GithubClient
     end
 
     def proxy_uri
-      return nil if @api_proxy.nil?
-      result = URI.parse(@api_proxy)
+      proxy = Chef::Config[:knife][:github_proxy]
+      return nil if proxy.nil?
+      result = URI.parse(proxy)
       return result unless result.host.nil? || result.host.empty?
       nil
     end
   end
 end
+

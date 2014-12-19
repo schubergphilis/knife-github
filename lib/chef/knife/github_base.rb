@@ -59,6 +59,10 @@ class Chef
                  :long => "--github_no_update",
                  :description => "Turn github update checking off",
                  :boolean => true
+
+          option :github_proxy,
+                 :long => "--github_proxy",
+                 :description => "Enable proxy configuration for github api"
  
           def validate_base_options
             unless locate_config_value('github_url')
@@ -78,13 +82,19 @@ class Chef
             @github_link            = locate_config_value("github_link") || 'ssh'
             @github_api_version     = locate_config_value("github_api_version") || 'v3'
             @github_ssl_verify_mode = locate_config_value("github_ssl_verify_mode") || 'verify_peer'
+            @github_proxy           = locate_config_value("github_proxy")
             @github_tmp             = locate_config_value("github_tmp") || '/var/tmp/gitdiff'
             @github_tmp             = "#{@github_tmp}#{Process.pid}"
           end
 
           def check_gem_version
             url  = 'http://rubygems.org/api/v1/gems/knife-github.json'
-            result = `curl -L -s #{url}`
+            proxy = @github_proxy
+            if proxy.nil?
+              result = `curl -L -s #{url}`
+            else
+              result = `curl -proxy #{proxy} -L -s #{url}`
+            end
             begin
               json = JSON.parse(result)
               webversion = Mixlib::Versioning.parse(json['version'])

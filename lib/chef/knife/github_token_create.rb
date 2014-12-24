@@ -134,7 +134,7 @@ module KnifeGithubTokenCreate
 
       token_key = nil
 
-      result = send_request(params)
+      result = connection.request(params)
       result.each do |token|
         if token['app'] && token['app']['name'] == "knife-github (API)"
           if token['scopes'].include?("delete_repo")
@@ -167,73 +167,15 @@ module KnifeGithubTokenCreate
       params[:url]    = @github_url + "/api/" + @github_api_version + "/authorizations"
       params[:body]   = '{"note":"knife-github","scopes":["delete_repo", "user", "public_repo", "repo", "gist"]"}'
       params[:action] = "POST"
-      send_request(params)
+      connection.request(params)
     end
 
     def delete_github_token(params)
       Chef::Log.debug("Deleting token id: #{params[':id']}")
       params[:url]    = @github_url + "/api/" + @github_api_version + "/authorizations/#{params[:id]}"
       params[:action] = "DELETE"
-      send_request(params)
+      connection.request(params)
     end
 
-    # Post Get the OAuth authentication token from config or command line
-    # @param params		[Hash] 		Hash containing all options 
-    #        params[:url]	[String]	Url to target
-    #        params[:body]  	[JSON]   	json data for the request
-    #        params[:token]	[String] 	OAuth token
-    #        params[:username]	[String]	Username if no token specified
-    #        params[:password]  [String]	Password if no token specified
-    #
-    def send_request(params)
-      url = params[:url]
-      
-      Chef::Log.debug("URL: " + url.to_s)
-
-      uri = URI.parse(url)
-      http = Net::HTTP.new(uri.host,uri.port)
-      if uri.scheme == "https"
-        http.use_ssl = true
-        if  @github_ssl_verify_mode == "verify_none"
-          http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-        else
-          http.verify_mode = OpenSSL::SSL::VERIFY_PEER
-        end
-      end
-
-      if params[:action] == "GET"
-        req = Net::HTTP::Get.new(uri.path)
-      elsif params[:action] == "POST"
-        req = Net::HTTP::Post.new(uri.path)
-      elsif params[:action] == "DELETE" 
-        req = Net::HTTP::Delete.new(uri.path)
-      end
-      
-      if params[:token].nil?
-        req.basic_auth params[:username], params[:password]
-      else
-        req.initheader = ({"Authorization" => "token #{params[:token]}"})
-      end
-      req.body = params[:body] if params[:body]
-      response = http.request(req)
-      
-      unless response.code =~ /^2../ then
-        puts "Error #{response.code}: #{response.message}"
-        puts JSON.pretty_generate(JSON.parse(response.body))
-        puts "URL: #{url}"
-        exit 1
-      end
-
-      return nil if response.body.nil? || response.body.empty?
-
-      begin
-        json = JSON.parse(response.body)
-      rescue
-        ui.warn "The result on the REST Request is not in json format"
-        ui.warn "Output: " + response.body
-        exit 1
-      end
-      json
-    end
   end
 end

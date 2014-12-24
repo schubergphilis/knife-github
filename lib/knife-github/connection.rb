@@ -6,33 +6,77 @@ require 'net/http'
 
 module GithubClient
  class Connection
-    def send_get_request(url, params = {})
-      unless params.empty?
-        params_arr = []
-        params.sort.each { |elem|
-          params_arr << elem[0].to_s + '=' + CGI.escape(elem[1].to_s).gsub('+', '%20').gsub(' ','%20')
-        }
-        data = params_arr.join('&')
-        url = "#{url}?#{data}"
-      end
+
+    def request(params)
+      ssl_verify_mode = Chef::Config[:knife][:github_ssl_verify_mode]
+      # @param params             [Hash]          Hash containing all options
+      #        params[:url]       [String]        Url to target
+      #        params[:body]      [JSON]          json data for the request
+      #        params[:token]     [String]        OAuth token
+      #        params[:username]  [String]        Username if no token specified
+      #        params[:password]  [String]        Password if no token specified
+      #
+      url = params[:url]
+      action = params[:action]
+      token = params[:token]
+      username = params[:username]
+      password = params[:password]
+      body = params[:body]
+      request_uri = params[:request_uri] || ''
 
       Chef::Log.debug("URL: " + url.to_s)
 
+      url = "#{url}#{request_uri}"
       uri = URI.parse(url)
-      http = http_client_builder.new(uri.host, uri.port)
-
+      http = http_builder.new(uri.host,uri.port)
       if uri.scheme == "https"
         http.use_ssl = true
-        http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+        if  @ssl_verify_mode == "verify_none"
+          http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+        else
+          http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+        end
       end
-  
-      request = Net::HTTP::Get.new(uri.request_uri)
-      response = http.request(request)
 
-      unless response.is_a?(Net::HTTPOK) then
+      if token.nil?
+        if action == "GET"
+          if uri.request_uri.nil?
+            req = Net::HTTP::Get.new(uri.path)
+          else
+            req = Net::HTTP::Get.new(uri.request_uri)
+          end
+        elsif action == "POST"
+          req = Net::HTTP::Post.new(uri.path)
+        elsif action == "DELETE"
+          req = Net::HTTP::Delete.new(uri.path)
+        end
+	if username && password
+          req.basic_auth username, password
+        end
+      else
+        if action == "GET"
+          if uri.request_uri.nil?
+            req = Net::HTTP::Get.new(uri.path, initheader = {"Authorization" => "token #{token}"})
+          else
+            req = Net::HTTP::Get.new(uri.request_uri, initheader = {"Authorization" => "token #{token}"} )
+          end
+        elsif action == "POST"
+          req = Net::HTTP::Post.new(uri.path, initheader = {"Authorization" => "token #{token}"})
+        elsif action == "DELETE"
+          req = Net::HTTP::Delete.new(uri.path, initheader = {"Authorization" => "token #{token}"})
+        end
+      end
+      Chef::Log.debug("Using token: #{token} or basic_auth #{username}, #{password} for action: #{action} on URL: #{url}")
+
+      req.body = body if body
+      response = http.request(req)
+      validate = response_validator(response)
+    end
+
+    def response_validator(response)
+      unless response.code =~ /^2../ then
         puts "Error #{response.code}: #{response.message}"
         puts JSON.pretty_generate(JSON.parse(response.body))
-        puts "URL: #{url}"
         exit 1
       end
 
@@ -46,11 +90,12 @@ module GithubClient
       return json
     end
 
-    def http_client_builder
-      http_proxy = proxy_uri
-      if http_proxy.nil?
+    def http_builder
+      proxy = Chef::Config[:knife][:github_proxy]
+      if proxy.nil?
         Net::HTTP
       else
+        http_proxy = URI.parse(proxy)
         Chef::Log.debug("Using #{http_proxy.host}:#{http_proxy.port} for proxy")
         user = http_proxy.user if http_proxy.user
         pass = http_proxy.password if http_proxy.password
@@ -58,13 +103,6 @@ module GithubClient
       end
     end
 
-    def proxy_uri
-      proxy = Chef::Config[:knife][:github_proxy]
-      return nil if proxy.nil?
-      result = URI.parse(proxy)
-      return result unless result.host.nil? || result.host.empty?
-      nil
-    end
   end
 end
 

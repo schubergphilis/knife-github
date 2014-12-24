@@ -21,6 +21,7 @@ require 'knife-github/config'
 require 'knife-github/version'
 require 'knife-github/connection'
 require 'mixlib/versioning'
+require 'chef/mixin/shell_out'
 
 class Chef
   class Knife
@@ -64,6 +65,11 @@ class Chef
                  :long => "--github_proxy",
                  :description => "Enable proxy configuration for github api"
  
+          option :github_token,
+                 :short => "-t",
+                 :long => "--github_token",
+                 :description => "Your github token for OAuth authentication"
+ 
           def validate_base_options
             unless locate_config_value('github_url')
               ui.error "Github URL not specified"
@@ -73,9 +79,6 @@ class Chef
               ui.error "Github organization(s) not specified"
               exit 1
             end
-            unless locate_config_value('github_no_update')
-              check_gem_version
-            end
 
             @github_url             = locate_config_value("github_url")
             @github_organizations   = locate_config_value("github_organizations")
@@ -83,13 +86,19 @@ class Chef
             @github_api_version     = locate_config_value("github_api_version") || 'v3'
             @github_ssl_verify_mode = locate_config_value("github_ssl_verify_mode") || 'verify_peer'
             @github_proxy           = locate_config_value("github_proxy")
+            @github_token           = locate_config_value("github_token")
             @github_tmp             = locate_config_value("github_tmp") || '/var/tmp/gitdiff'
             @github_tmp             = "#{@github_tmp}#{Process.pid}"
+
+            unless locate_config_value('github_no_update')
+              check_gem_version
+            end
           end
 
           def check_gem_version
+            extend Chef::Mixin::ShellOut
             url   = 'http://rubygems.org/api/v1/gems/knife-github.json'
-            proxy = locate_config_value("github_proxy") 
+            proxy = @github_proxy
             if proxy.nil?
               result = `curl -L -s #{url}`
               Chef::Log.debug("removing proxy in glogal git config")
@@ -215,12 +224,16 @@ class Chef
           end
       
           def get_github_repo_data(org)
+            params = {}
             arr  = []
-            page = 1
             url  = @github_url + "/api/" + @github_api_version + "/orgs/" + org + "/repos"
+            params[:token] = @github_token
+            params[:action] = "GET"
+            params[:url] = url
+            page = 1
             while true
-              params = {'response' => 'json', 'page' => page }
-              result = connection.send_get_request(url, params)
+              params[:request_uri] = "?response=json&page=#{page}"
+              result = connection.request(params)
               break if result.nil? || result.count < 1
               result.each { |key| arr << Github::Repo.new(key) }
               page = page + 1
@@ -294,6 +307,25 @@ class Chef
                  exit 1
               end
               version
+          end
+
+          # Get the OAuth authentication token from config or command line
+          # @param nil
+          def get_github_token()
+            token = locate_config_value('github_token')
+            if token.nil? || token.empty?
+               Chef::Log.error("Please specify a github token")
+               exit 1
+            end
+            token
+          end
+
+          # Create the json body with repo config for POST information
+          # @param name [String] cookbook name
+          def get_body_json()
+            body = {
+              "scopes" => ["public_repo"]
+            }.to_json
           end
         end
       end

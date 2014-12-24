@@ -52,6 +52,8 @@ Currently the options are: <tt>verify_peer</tt> <tt>verify_none</tt>
 Token information is required when creating and deleting github repositories.  
 With the command <tt>knife github token create</tt> you are able to create token information.
 
+###### github_proxy \<optional\>
+Used for HTTP communication over a proxy. 
 
 Other
 =====

@@ -135,6 +135,8 @@ class Chef
             Chef::Log.debug("github_api           : " + @github_api_version.to_s)
             Chef::Log.debug("github_link          : " + @github_link.to_s)
             Chef::Log.debug("github_ssl_mode      : " + @github_ssl_verify_mode.to_s)
+            Chef::Log.debug("github_proxy         : " + @github_proxy.to_s)
+            Chef::Log.debug("github_token         : " + @github_token.to_s)
           end
 
           def locate_config_value(key)
@@ -314,8 +316,7 @@ class Chef
           def get_github_token()
             token = locate_config_value('github_token')
             if token.nil? || token.empty?
-               Chef::Log.error("Please specify a github token")
-               exit 1
+               return nil
             end
             token
           end

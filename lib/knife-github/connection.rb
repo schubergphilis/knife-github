@@ -9,12 +9,14 @@ module GithubClient
 
     def request(params)
       ssl_verify_mode = Chef::Config[:knife][:github_ssl_verify_mode]
-      # @param params             [Hash]          Hash containing all options
-      #        params[:url]       [String]        Url to target
-      #        params[:body]      [JSON]          json data for the request
-      #        params[:token]     [String]        OAuth token
-      #        params[:username]  [String]        Username if no token specified
-      #        params[:password]  [String]        Password if no token specified
+      # @param params                [Hash]          Hash containing all options
+      #        params[:url]          [String]        Url to target
+      #        params[:body]         [JSON]          json data for the request
+      #        params[:token]        [String]        OAuth token
+      #        params[:username]     [String]        Username if no token specified
+      #        params[:password]     [String]        Password if no token specified
+      #        params[:request_uri]  [String]        Some request, only need an URI....
+      #        params[:action]       [String]        The HTTP action
       #
       url = params[:url]
       action = params[:action]
@@ -23,6 +25,11 @@ module GithubClient
       password = params[:password]
       body = params[:body]
       request_uri = params[:request_uri] || ''
+
+      unless url || action then
+        puts "URL and ACTION not defined!"
+        exit 1
+      end
 
       Chef::Log.debug("URL: " + url.to_s)
 
@@ -37,36 +44,32 @@ module GithubClient
           http.verify_mode = OpenSSL::SSL::VERIFY_PEER
         end
       end
-
-      if token.nil?
-        if action == "GET"
-          if uri.request_uri.nil?
-            req = Net::HTTP::Get.new(uri.path)
-          else
-            req = Net::HTTP::Get.new(uri.request_uri)
-          end
-        elsif action == "POST"
-          req = Net::HTTP::Post.new(uri.path)
-        elsif action == "DELETE"
-          req = Net::HTTP::Delete.new(uri.path)
-        end
-	if username && password
-          req.basic_auth username, password
-        end
-      else
-        if action == "GET"
-          if uri.request_uri.nil?
-            req = Net::HTTP::Get.new(uri.path, initheader = {"Authorization" => "token #{token}"})
-          else
-            req = Net::HTTP::Get.new(uri.request_uri, initheader = {"Authorization" => "token #{token}"} )
-          end
-        elsif action == "POST"
-          req = Net::HTTP::Post.new(uri.path, initheader = {"Authorization" => "token #{token}"})
-        elsif action == "DELETE"
-          req = Net::HTTP::Delete.new(uri.path, initheader = {"Authorization" => "token #{token}"})
-        end
+      
+      initheader = {}
+      if token
+        initheader = {"Authorization" => "token #{token}"}
+        Chef::Log.debug("Using token: #{token} for action: #{action} on URL: #{url}")
       end
-      Chef::Log.debug("Using token: #{token} or basic_auth #{username}, #{password} for action: #{action} on URL: #{url}")
+
+      case action
+      when "GET"
+        if uri.request_uri.nil?
+          req = Net::HTTP::Get.new(uri.path, initheader)
+        else
+          req = Net::HTTP::Get.new(uri.request_uri, initheader)
+        end
+      when "POST"
+        req = Net::HTTP::Post.new(uri.path, initheader)
+      when "DELETE"
+        req = Net::HTTP::Delete.new(uri.path, initheader)
+      else
+        puts "Error, undefined action #{action}"
+        exit 1
+      end
+      if username && password
+        req.basic_auth username, password
+        Chef::Log.debug("Using basic_auth #{username}, #{password} for action: #{action} on URL: #{url}")
+      end
 
       req.body = body if body
       response = http.request(req)

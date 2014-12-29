@@ -82,7 +82,7 @@ module KnifeGithubCleanup
 
     def repo_cleanup(repo)
       cookbook_path = config[:cookbook_path] || Chef::Config[:cookbook_path]
-      cookbook = File.join(cookbook_path.first,repo)
+      cookbook = File.join(cookbook_path,repo)
       if File.exists?(cookbook)
         if repo_status_clean?(repo, cookbook)
           # delete the repo 

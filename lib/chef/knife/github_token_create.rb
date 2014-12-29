@@ -107,17 +107,6 @@ module KnifeGithubTokenCreate
       return true
     end
 
-    # Get the OAuth authentication token from config or command line
-    # @param none
-    def get_github_token()
-      token = locate_config_value('github_token')
-      if token.nil? || token.empty? 
-        return nil
-      else
-        return token
-      end
-    end
-
     # Validate the OAuth authentication token for the knife-github application.
     # @param username   [String]        validates the token for specific user. (default is ENV['USER'])
     #

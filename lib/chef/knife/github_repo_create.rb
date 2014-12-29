@@ -93,7 +93,7 @@ module KnifeGithubRepoCreate
       # Creating the local repository or using existing one.
       cookbook_dir = get_cookbook_path(name) || ""
 
-      params[:body] = get_body_json(name, desc)
+      params[:body] = lget_body_json(name, desc)
       params[:token] = get_github_token()
       params[:action] = "POST" 
       if File.exists?(cookbook_dir)
@@ -265,7 +265,7 @@ module KnifeGithubRepoCreate
 
     # Create the json body with repo config for POST information
     # @param name [String] cookbook name  
-    def get_body_json(cookbook_name, description="Please fill in the description.")
+    def lget_body_json(cookbook_name, description="Please fill in the description.")
       body = {
         "name" => cookbook_name,
         "description" => description,

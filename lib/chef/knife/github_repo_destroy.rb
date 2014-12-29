@@ -106,7 +106,11 @@ module KnifeGithubRepoDestroy
       # update_metadata(cookbook_path)
 
       # Creating the github repository
-      repo = delete_request(url, token)
+      params = {}
+      params[:url] = url
+      params[:token] = token
+      params[:action] = "DELETE"
+      repo = connection.request(params)
       puts "Repo: #{name} is deleted" if repo.nil?
 
       # github_ssh_url = repo['ssh_url']
@@ -202,72 +206,5 @@ module KnifeGithubRepoDestroy
       create.run
     end
 
-    # Create the json body with repo config for POST information
-    # @param name [String] cookbook name  
-    def get_body_json()
-      body = {
-        "scopes" => ["public_repo"]
-      }.to_json
-    end
-
-    # Get the OAuth authentication token from config or command line
-    # @param nil
-    def get_github_token()
-      token = locate_config_value('github_token')
-      if token.nil? || token.empty?
-        Chef::Log.error("Cannot find any token information!")
-        Chef::Log.error("Please use: knife github token create")
-        exit 1
-      end
-      token
-    end
-
-    # Send DELETE command to API OAuth authentication token from config or command line
-    # @param url   [String] target url (organization or user) 
-    #        body  [JSON]   json data with repo configuration
-    #        token [String] token sring
-    def delete_request(url, token)
-
-      # if @github_ssl_verify_mode == "verify_none"
-      #   config[:ssl_verify_mode] = :verify_none
-      # elsif @github_ssl_verify_mode == "verify_peer"
-      #   config[:ssl_verify_mode] = :verify_peer
-      # end
-
-      Chef::Log.debug("URL: " + url.to_s)
-
-      uri = URI.parse(url)
-      http = Net::HTTP.new(uri.host,uri.port)
-      if uri.scheme == "https"
-        http.use_ssl = true
-        if @github_ssl_verify_mode == "verify_none"
-          http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-        else
-          http.verify_mode = OpenSSL::SSL::VERIFY_PEER
-        end
-      end
-       
-      req = Net::HTTP::Delete.new(uri.path, initheader = {"Authorization" => "token #{token}"}) 
-      req.body = get_body_json()        
-      response = http.request(req)
-      
-      return nil if response.code == "204"
-
-      unless response.code == "201" then
-        puts "Error #{response.code}: #{response.message}"
-        puts JSON.pretty_generate(JSON.parse(response.body))
-        puts "URL: #{url}"
-        exit 1
-      end
-
-      begin
-        json = JSON.parse(response.body)
-      rescue
-        ui.warn "The result on the RESTRequest is not in json format"
-        ui.warn "Output: " + response.body
-        exit 1
-      end
-      json
-    end
   end
 end

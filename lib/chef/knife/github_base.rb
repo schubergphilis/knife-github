@@ -21,6 +21,7 @@ require 'knife-github/config'
 require 'knife-github/version'
 require 'knife-github/connection'
 require 'mixlib/versioning'
+require 'chef/mixin/shell_out'
 
 class Chef
   class Knife
@@ -59,6 +60,15 @@ class Chef
                  :long => "--github_no_update",
                  :description => "Turn github update checking off",
                  :boolean => true
+
+          option :github_proxy,
+                 :long => "--github_proxy",
+                 :description => "Enable proxy configuration for github api"
+ 
+          option :github_token,
+                 :short => "-t",
+                 :long => "--github_token",
+                 :description => "Your github token for OAuth authentication"
  
           def validate_base_options
             unless locate_config_value('github_url')
@@ -69,22 +79,37 @@ class Chef
               ui.error "Github organization(s) not specified"
               exit 1
             end
-            unless locate_config_value('github_no_update')
-              check_gem_version
-            end
 
             @github_url             = locate_config_value("github_url")
             @github_organizations   = locate_config_value("github_organizations")
             @github_link            = locate_config_value("github_link") || 'ssh'
             @github_api_version     = locate_config_value("github_api_version") || 'v3'
             @github_ssl_verify_mode = locate_config_value("github_ssl_verify_mode") || 'verify_peer'
+            @github_proxy           = locate_config_value("github_proxy")
+            @github_token           = locate_config_value("github_token")
             @github_tmp             = locate_config_value("github_tmp") || '/var/tmp/gitdiff'
             @github_tmp             = "#{@github_tmp}#{Process.pid}"
+
+            unless locate_config_value('github_no_update')
+              check_gem_version
+            end
           end
 
           def check_gem_version
-            url  = 'http://rubygems.org/api/v1/gems/knife-github.json'
-            result = `curl -L -s #{url}`
+            extend Chef::Mixin::ShellOut
+            url   = 'http://rubygems.org/api/v1/gems/knife-github.json'
+            proxy = @github_proxy
+            if proxy.nil?
+              result = `curl -L -s #{url}`
+              Chef::Log.debug("removing proxy in glogal git config")
+              shell_out!("git config --global --unset http.proxy")
+              shell_out!("git config --global --unset https.proxy")
+            else
+              Chef::Log.debug("Putting proxy in glogal git config")
+              shell_out!("git config --global http.proxy #{proxy}")
+              shell_out!("git config --global https.proxy #{proxy}")
+              result = `curl --proxy #{proxy} -L -s #{url}`
+            end
             begin
               json = JSON.parse(result)
               webversion = Mixlib::Versioning.parse(json['version'])
@@ -110,6 +135,8 @@ class Chef
             Chef::Log.debug("github_api           : " + @github_api_version.to_s)
             Chef::Log.debug("github_link          : " + @github_link.to_s)
             Chef::Log.debug("github_ssl_mode      : " + @github_ssl_verify_mode.to_s)
+            Chef::Log.debug("github_proxy         : " + @github_proxy.to_s)
+            Chef::Log.debug("github_token         : " + @github_token.to_s)
           end
 
           def locate_config_value(key)
@@ -199,12 +226,16 @@ class Chef
           end
       
           def get_github_repo_data(org)
+            params = {}
             arr  = []
-            page = 1
             url  = @github_url + "/api/" + @github_api_version + "/orgs/" + org + "/repos"
+            params[:token] = @github_token
+            params[:action] = "GET"
+            params[:url] = url
+            page = 1
             while true
-              params = {'response' => 'json', 'page' => page }
-              result = connection.send_get_request(url, params)
+              params[:request_uri] = "?response=json&page=#{page}"
+              result = connection.request(params)
               break if result.nil? || result.count < 1
               result.each { |key| arr << Github::Repo.new(key) }
               page = page + 1
@@ -280,6 +311,23 @@ class Chef
               version
           end
 
+          # Get the OAuth authentication token from config or command line
+          # @param nil
+          def get_github_token()
+            token = locate_config_value('github_token')
+            if token.nil? || token.empty?
+               return nil
+            end
+            token
+          end
+
+          # Create the json body with repo config for POST information
+          # @param name [String] cookbook name
+          def get_body_json()
+            body = {
+              "scopes" => ["public_repo"]
+            }.to_json
+          end
         end
       end
     end

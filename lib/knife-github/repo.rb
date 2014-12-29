@@ -76,7 +76,11 @@ module Github
 
     def get_tags(url)
       tags = []
-      result = connection.send_get_request(url)
+      params = {}
+      params[:url] = url
+      params[:action] = "GET"
+      params[:token] = Chef::Config[:knife][:github_token] 
+      result = connection.request(params)
       result.each { |tag| tags.push(tag['name']) if tag['name'] =~ /^(\d*)\.(\d*)\.(\d*)$/ }
       tags || nil
     end

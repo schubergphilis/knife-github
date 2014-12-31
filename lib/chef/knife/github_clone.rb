@@ -91,6 +91,14 @@ require 'chef/knife'
         end
 
  	github_url = repo[cookbook_name][repo_link]
+        token = get_github_token
+        if token.nil? || token.empty?
+          clone_url = github_url
+        else
+          uri = URI.parse(github_url)
+          uri.userinfo = "#{token}:x-oauth-basic"
+          clone_url = URI.join(uri)
+        end
         cookbook_path = get_cookbook_path(cookbook_name)
         if File.exists?(cookbook_path)
           ui.info("Processing [ SKIP    ] #{cookbook_name}")
@@ -98,7 +106,8 @@ require 'chef/knife'
         else
           ui.info("Processing [ CLONE   ] #{cookbook_name}")
           Chef::Log.info("Cloning repository to: #{cookbook_path}")
-          shell_out!("git clone #{github_url} #{cookbook_path}") 
+          Chef::Log.debug("Using url: #{clone_url}")
+          shell_out!("git clone #{clone_url} #{cookbook_path}") 
         end
       end
 

@@ -10,7 +10,7 @@ Configurations
 When working on customer admin machines, it's recommended to used an central configuration file.
 This file should be created in: /etc/githubrc.rb and can contain any attribute in the following structure:
 
-    github_url			        "https://github.schubergphilis.com"
+    github_url		        "https://github.schubergphilis.com"
     github_link             	"ssh"
     github_organizations    	[ "TLA-Cookbooks", "SBP-Cookbooks" ]
 
@@ -37,6 +37,9 @@ Here you can also use the github.com address if you don't have an internal appli
 Here you specify the organizations that you want to taget when searching for cookbooks.  
 The first entry will have priority over the other entries.
 
+###### github_proxy \<optional\>
+You can specify a proxy server in case you don't have direct internet access. If you have defined a proxy, github_link needs to be set to either hhtp or https. 
+
 ###### github_link \<optional\>
 You can specify the link type that you would like to use to download your cookbooks, default is <tt>ssh</tt>.   
 Options are <tt>ssh</tt> <tt>git</tt> <tt>http</tt> <tt>https</tt> <tt>svn</tt> 
@@ -52,8 +55,6 @@ Currently the options are: <tt>verify_peer</tt> <tt>verify_none</tt>
 Token information is required when creating and deleting github repositories.  
 With the command <tt>knife github token create</tt> you are able to create token information.
 
-###### github_proxy \<optional\>
-Used for HTTP communication over a proxy. 
 
 Other
 =====

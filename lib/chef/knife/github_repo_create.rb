@@ -256,8 +256,8 @@ module KnifeGithubRepoCreate
       else
 
         github_url = @github_url.gsub('http://', 'git://') if @github_url =~ /^http:\/\/.*$/
-        github_url = @github_url.gsub('https://', 'git://') if @github_url =~ /^https:\/\/.*$/
- 
+        github_url = @github_url if @github_url =~ /^https:\/\/.*$/
+
         template_path = File.join(github_url, template_org, "chef_template_#{type}.git") 
         shell_out!("git clone #{template_path} #{target}") # , :cwd => cookbook_path)
       end

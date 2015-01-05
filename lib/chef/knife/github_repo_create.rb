@@ -102,11 +102,22 @@ module KnifeGithubRepoCreate
         # Creating the github repository
         Chef::Log.debug("Creating the github repository")
         repo = connection.request(params)
-        github_ssh_url = repo['ssh_url']
-    
-        Chef::Log.debug("Commit and push local repository")
+        if @github_url =~ /^https:\/\/.*$/
+          token = get_github_token
+          if token.nil? || token.empty?
+            github_connection_url = repo['html_url']
+          else
+            uri = URI.parse(repo['html_url'])
+            uri.userinfo = "#{token}:x-oauth-basic"
+            github_connection_url = URI.join(uri)
+          end
+        else
+          github_connection_url = repo['ssh_url']
+        end
+ 
+        Chef::Log.debug("Commit and push local repository, using URL: #{github_connection_url}")
         # Initialize the local git repo
-        git_commit_and_push(cookbook_dir, github_ssh_url)
+        git_commit_and_push(cookbook_dir, github_connection_url)
 
         puts "Finished creating #{name} and uploading #{cookbook_dir}"
       else
@@ -121,11 +132,22 @@ module KnifeGithubRepoCreate
         # Creating the github repository
         Chef::Log.debug("Creating the github repository")
         repo = connection.request(params)
-        github_ssh_url = repo['ssh_url']
-  
-        Chef::Log.debug("Commit and push local repository")      
+        if @github_url =~ /^https:\/\/.*$/
+          token = get_github_token
+          if token.nil? || token.empty?
+            github_connection_url = repo['html_url']
+          else
+            uri = URI.parse(repo['html_url'])
+            uri.userinfo = "#{token}:x-oauth-basic"
+            github_connection_url = URI.join(uri)
+          end
+        else
+          github_connection_url = repo['ssh_url']
+        end
+
+        Chef::Log.debug("Commit and push local repository, using URL: #{github_connection_url}")
         # Initialize the local git repo
-        git_commit_and_push(cookbook_dir, github_ssh_url)
+        git_commit_and_push(cookbook_dir, github_connection_url)
   
         Chef::Log.debug("Removing temp files")
         FileUtils.remove_entry(@github_tmp)
@@ -184,8 +206,8 @@ module KnifeGithubRepoCreate
 
     # Set the username in README.md
     # @param cookbook_path [String] cookbook path
-    #        github_ssh_url [String] github ssh url from repo
-    def git_commit_and_push(cookbook_path, github_ssh_url)
+    #        github_url [String] github ssh url from repo
+    def git_commit_and_push(cookbook_path, github_url)
       if File.exists?(File.join(cookbook_path, ".git"))
         shell_out("git remote rm origin", :cwd => cookbook_path)
       else  
@@ -194,7 +216,7 @@ module KnifeGithubRepoCreate
       shell_out!("echo - $(date): Uploaded with knife github plugin. >> CHANGELOG.md ", :cwd => cookbook_path)
       shell_out!("git add .", :cwd => cookbook_path) 
       shell_out!("git commit -m 'creating initial cookbook structure from the knife-github plugin' ", :cwd => cookbook_path) 
-      shell_out!("git remote add origin #{github_ssh_url} ", :cwd => cookbook_path) 
+      shell_out!("git remote add origin #{github_url} ", :cwd => cookbook_path) 
       shell_out!("git push -u origin master", :cwd => cookbook_path) 
     end
 

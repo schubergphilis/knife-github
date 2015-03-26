@@ -64,12 +64,12 @@ class Chef
           option :github_proxy,
                  :long => "--github_proxy",
                  :description => "Enable proxy configuration for github api"
- 
+
           option :github_token,
                  :short => "-t",
                  :long => "--github_token",
                  :description => "Your github token for OAuth authentication"
- 
+
           def validate_base_options
             unless locate_config_value('github_url')
               ui.error "Github URL not specified"
@@ -99,30 +99,30 @@ class Chef
             extend Chef::Mixin::ShellOut
             url   = 'http://rubygems.org/api/v1/gems/knife-github.json'
             proxy = @github_proxy
+
             if proxy.nil?
+              Chef::Log.debug("Fetching gem info without a proxy configured")
               result = `curl -L -s #{url}`
-              Chef::Log.debug("removing proxy in glogal git config")
-              shell_out!("git config --global --unset http.proxy")
-              shell_out!("git config --global --unset https.proxy")
             else
-              Chef::Log.debug("Putting proxy in glogal git config")
-              shell_out!("git config --global http.proxy #{proxy}")
-              shell_out!("git config --global https.proxy #{proxy}")
+              Chef::Log.debug("Fetching gem info with proxy configured (#{proxy})")
               result = `curl --proxy #{proxy} -L -s #{url}`
             end
+
             begin
               json = JSON.parse(result)
               webversion = Mixlib::Versioning.parse(json['version'])
               thisversion = Mixlib::Versioning.parse(::Knife::Github::VERSION)
+
               if webversion > thisversion
                 ui.info "INFO: New version (#{webversion.to_s}) of knife-github is available!"
                 ui.info "INFO: Turn off this message with --github_no_update or add knife[:github_no_update] = true to your configuration"
-              end 
+              end
+
               Chef::Log.debug("gem_local_version    : " + thisversion.to_s)
               Chef::Log.debug("gem_repo_version     : " + webversion.to_s)
               Chef::Log.debug("gem_downloads        : " + json['version_downloads'].to_s)
               Chef::Log.debug("gem_total_downloads  : " + json['downloads'].to_s)
- 
+
             rescue
               ui.info "INFO: Cannot verify gem version information from rubygems.org"
               ui.info "INFO: Turn off this message with --github_no_update or add knife[:github_no_update] = true to your configuration"
@@ -174,8 +174,8 @@ class Chef
             orgs.each do |org|
               get_org_data(org).each { |repo|
                 name = repo['name']
-                repos["#{name}"] = repo.to_hash 
-              } 
+                repos["#{name}"] = repo.to_hash
+              }
             end
             repos
           end
@@ -186,9 +186,9 @@ class Chef
 
             cache_repo_data  = get_cache_data(file)
             github_repo_data = get_github_repo_data(org)
-      
+
             github_repoList = Github::RepoList.new
-      
+
             github_repo_data.each do |repo|
               github_repoList.push(repo)
               cache_repo = cache_repo_data.find { |k| k['name'] == repo.name }
@@ -198,7 +198,7 @@ class Chef
                   github_repoList.last.tags_all = cache_repo['tags_all']
                   github_repoList.last.tags_last = cache_repo['tags_last']
                 else
-                  github_repoList.last.update_tags! 
+                  github_repoList.last.update_tags!
                 end
               else
                 # cannot find cache repo data, updating tags
@@ -208,7 +208,7 @@ class Chef
             write_cache_data(file, github_repoList)
             get_cache_data(file)
           end
-          
+
           def connection
             @connection ||= GithubClient::Connection.new()
           end
@@ -216,7 +216,7 @@ class Chef
           def write_cache_data(file, json)
             File.open(file, 'w') { |f| f.write(json.to_pretty_json) }
           end
-      
+
           def get_cache_data(file)
             if File.exists?(file)
               return JSON.parse(File.read(file))
@@ -224,7 +224,7 @@ class Chef
               return JSON.parse("{}")
             end
           end
-      
+
           def get_github_repo_data(org)
             params = {}
             arr  = []
@@ -242,7 +242,7 @@ class Chef
             end
             return arr
           end
-      
+
           def get_dns_name(url)
             url = url.downcase.gsub("http://","") if url.downcase.start_with?("http://")
             url = url.downcase.gsub("https://","") if url.downcase.start_with?("https://")
@@ -250,17 +250,33 @@ class Chef
           end
 
           def get_clone(url, cookbook)
-              if ! File.directory? @github_tmp
-                 Dir.mkdir("#{@github_tmp}")
+              git_proxy = `git config --get http.proxy`
+              proxy     = @github_proxy
+
+              unless proxy.nil? && proxy != git_proxy
+                Chef::Log.debug("Configuring git http/https proxy to #{proxy}")
+                shell_out!("git config --global http.proxy #{proxy}")
+                shell_out!("git config --global https.proxy #{proxy}")
               end
+
+              Dir.mkdir("#{@github_tmp}") unless File.directory? @github_tmp
+
               Dir.mkdir("#{@github_tmp}/git")
               ui.info("Getting #{@cookbook_name} from #{url}")
               output = `git clone #{url} #{@github_tmp}/git/#{cookbook} 2>&1`
+
               if $?.exitstatus != 0
                  Chef::Log.error("Could not clone the repository for: #{cookbook}")
                  FileUtils.remove_entry(@github_tmp)
                  exit 1
               end
+
+              unless proxy.nil? && proxy != git_proxy
+                Chef::Log.debug("Restoring git http/https proxy to #{git_proxy}")
+                shell_out!("git config --global http.proxy #{git_proxy}")
+                shell_out!("git config --global https.proxy #{git_proxy}")
+              end
+
               return true
           end
 
@@ -291,7 +307,7 @@ class Chef
             end
 
             cookbook_path = File.join(cookbook_path.first,cookbook_name)
-          end 
+          end
 
           # Get the version number in the git version of the cookbook
           # @param version [String] Version

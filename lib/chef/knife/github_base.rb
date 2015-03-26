@@ -294,12 +294,20 @@ class Chef
 
           def get_cookbook_path(cookbook_name)
             cookbook_path = config[:cookbook_path] || Chef::Config[:cookbook_path]
+
             if cookbook_path.nil? || cookbook_path.empty?
               Chef::Log.error("Please specify a cookbook path")
               exit 1
+            else
+              if cookbook_path.is_a?(String)
+                cookbook_path = [ File.expand_path(cookbook_path) ]
+              elsif cookbook_path.is_a?(Array)
+                cookbook_path.map! { |path| File.expand_path(path) }
+              else
+                Chef::Log.error("Cookbook path must be either a string or array")
+                exit 1
+              end
             end
-
-            cookbook_path = [ cookbook_path ] if cookbook_path.is_a?(String)
 
             unless File.exists?(cookbook_path.first) && File.directory?(cookbook_path.first)
               Chef::Log.error("Cannot find the directory: #{cookbook_path.first}")

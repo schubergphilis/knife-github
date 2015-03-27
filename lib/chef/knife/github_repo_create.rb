@@ -17,6 +17,7 @@
 #
 
 require 'chef/knife'
+require 'etc'
 
 module KnifeGithubRepoCreate
   class GithubRepoCreate < Chef::Knife
@@ -246,14 +247,14 @@ module KnifeGithubRepoCreate
       return nil
     end
 
-    # Get the username from passwd file or git config
+    # Get the username from git config otherwise fall back to passwd file
     # @param nil
     def get_username()
-      username = ENV['USER']
-      passwd_user = %x(getent passwd #{username} | cut -d ':' -f 5).chomp
-      username = passwd_user if passwd_user
-      git_user_name = %x(git config user.name).strip
-      username = git_user_name if git_user_name
+      username_gitconfig = %x(git config user.name).strip
+      username_passwd    = Etc.getpwnam(Etc.getlogin).gecos.gsub(/ - SBP.*/,'')
+
+      username = username_gitconfig unless username_gitconfig.nil?
+      username = username_passwd if username.empty?
       username
     end
 

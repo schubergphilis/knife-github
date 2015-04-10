@@ -21,5 +21,5 @@ Gem::Specification.new do |s|
   s.add_dependency 'mixlib-versioning', '>= 1.0.0'
   s.add_dependency 'highline', '>= 1.6.19'
   s.add_dependency 'rb-readline', '~> 0.5.1'
-  s.add_dependency 'chef', '~> 11.0'
+  s.add_dependency 'chef', '>= 11.0'
 end

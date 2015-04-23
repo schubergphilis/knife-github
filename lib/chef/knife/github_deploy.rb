@@ -12,8 +12,8 @@ module KnifeGithubDeploy
   #
   # === Examples
   # Deploy a development version of cookbook to your chef server
-  #    knife github deploy cookbook_name 
-  #    
+  #    knife github deploy cookbook_name
+  #
   # Deploy a release version of cookbook to your chef server
   #    knife github deploy cookbook_name -f
   #
@@ -22,7 +22,7 @@ module KnifeGithubDeploy
   # -p Update the patch component of the version
   # -m Update the minor component of the version
   # -M Update the major component of the version
-  # 
+  #
   # == Operation Modes
   # Development (default)
   #
@@ -58,7 +58,7 @@ module KnifeGithubDeploy
         require 'chef/cookbook_loader'
         require 'chef/cookbook_uploader'
       end
-      
+
       banner "knife github deploy COOKBOOK [VERSION] (options)"
       category "github"
 
@@ -93,7 +93,7 @@ module KnifeGithubDeploy
       def run
         # Main run entry point for the class
 
-        validate_base_options      
+        validate_base_options
 
         display_debug_info
 
@@ -160,7 +160,7 @@ module KnifeGithubDeploy
             inChef = false
         end
 
-        
+
         if config[:final]
             ui.info "Using Final mode"
 
@@ -236,13 +236,13 @@ module KnifeGithubDeploy
              minor = $2
              patch = $3
              if config[:major]
-               major = major.to_i + 1 
-               minor = 0 
-               patch = 0 
+               major = major.to_i + 1
+               minor = 0
+               patch = 0
              end
-             if config[:minor] 
-              minor = minor.to_i + 1 
-              patch = 0 
+             if config[:minor]
+              minor = minor.to_i + 1
+              patch = 0
              end
              patch = patch.to_i + 1 if config[:patch]
              version = "#{major}.#{minor}.#{patch}"
@@ -256,7 +256,7 @@ module KnifeGithubDeploy
 
       # Upload the cookbook to chef server
       # If mode is final, freeze the cookbook
-      def cookbook_upload() 
+      def cookbook_upload()
           # Git meuk should not be uploaded use chefignore file instead
           # FileUtils.remove_entry("#{@github_tmp}/git/#{@cookbook_name}/.git")
 		  args = ['cookbook', 'upload',  @cookbook_name ]

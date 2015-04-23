@@ -33,13 +33,13 @@ module KnifeGithubRepoDestroy
     # -t --github_token		Authentication token for the github.
     # -U --github_user_repo	Destroy the cookbook in the user environment.
     #
-    
+
     deps do
       require 'chef/knife/github_base'
       include Chef::Knife::GithubBase
       require 'chef/mixin/shell_out'
     end
-      
+
     banner "knife github repo destroy <name> (options)"
     category "github"
 
@@ -58,7 +58,7 @@ module KnifeGithubRepoDestroy
       extend Chef::Mixin::ShellOut
 
       # validate base options from base module.
-      validate_base_options      
+      validate_base_options
 
       # Display information if debug mode is on.
       display_debug_info
@@ -69,11 +69,11 @@ module KnifeGithubRepoDestroy
       # Get the organization name from config
       org = locate_config_value('github_organizations').first
 
-      if name.nil? || name.empty? 
+      if name.nil? || name.empty?
         Chef::Log.error("Please specify a repository name")
         exit 1
-      end 
-       
+      end
+
       user = get_userlogin
 
       if config[:github_user_repo]
@@ -93,7 +93,7 @@ module KnifeGithubRepoDestroy
       # Get body data for post
       # body = get_body_json(name, desc)
 
-      # Creating the local repository 
+      # Creating the local repository
       # Chef::Log.debug("Creating the local repository based on template")
       # create_cookbook(name, @github_tmp)
 
@@ -101,7 +101,7 @@ module KnifeGithubRepoDestroy
 
       # Updating README.md if needed.
       # update_readme(cookbook_path)
- 
+
       # Updateing metadata.rb if needed.
       # update_metadata(cookbook_path)
 
@@ -115,27 +115,27 @@ module KnifeGithubRepoDestroy
 
       # github_ssh_url = repo['ssh_url']
 
-      # Chef::Log.debug("Commit and push local repository")      
+      # Chef::Log.debug("Commit and push local repository")
       # Initialize the local git repo
       # git_commit_and_push(cookbook_path, github_ssh_url)
 
       # Chef::Log.debug("Removing temp files")
       # FileUtils.remove_entry(@github_tmp)
     end
- 
+
     # Set the username in README.md
     # @param cookbook_path [String] cookbook path
     #        github_ssh_url [String] github ssh url from repo
     def git_commit_and_push(cookbook_path, github_ssh_url)
       shell_out!("git init", :cwd => cookbook_path )
-      shell_out!("git add .", :cwd => cookbook_path ) 
-      shell_out!("git commit -m 'creating initial cookbook structure from the knife-github plugin' ", :cwd => cookbook_path ) 
-      shell_out!("git remote add origin #{github_ssh_url} ", :cwd => cookbook_path ) 
-      shell_out!("git push -u origin master", :cwd => cookbook_path ) 
+      shell_out!("git add .", :cwd => cookbook_path )
+      shell_out!("git commit -m 'creating initial cookbook structure from the knife-github plugin' ", :cwd => cookbook_path )
+      shell_out!("git remote add origin #{github_ssh_url} ", :cwd => cookbook_path )
+      shell_out!("git push -u origin master", :cwd => cookbook_path )
     end
 
     # Set the username in README.md
-    # @param name [String] cookbook path    
+    # @param name [String] cookbook path
     def update_readme(cookbook_path)
       contents = ''
       username = get_username
@@ -149,7 +149,7 @@ module KnifeGithubRepoDestroy
     end
 
     # Set the username and email in metadata.rb
-    # @param name [String] cookbook path 
+    # @param name [String] cookbook path
     def update_metadata(cookbook_path)
       contents = ''
       username = get_username

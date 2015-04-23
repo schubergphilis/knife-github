@@ -24,7 +24,7 @@ module KnifeGithubCleanup
   # and not on the github.
   #
   # If it cannot find any uncommitted changes, it will safely remove your repo.
-  # It's good practice to cleanup and re-download repos because this way they 
+  # It's good practice to cleanup and re-download repos because this way they
   # can move from organization to organization.
   class GithubCleanup < Chef::Knife
 
@@ -33,7 +33,7 @@ module KnifeGithubCleanup
       include Chef::Knife::GithubBase
       require 'chef/mixin/shell_out'
     end
-    
+
     banner "knife github cleanup [COOKBOOK] (options)"
     category "github"
 
@@ -55,7 +55,7 @@ module KnifeGithubCleanup
       extend Chef::Mixin::ShellOut
 
       # validate base options from base module.
-      validate_base_options      
+      validate_base_options
 
       # Display information if debug mode is on.
       display_debug_info
@@ -85,9 +85,9 @@ module KnifeGithubCleanup
       cookbook = File.join(cookbook_path,repo)
       if File.exists?(cookbook)
         if repo_status_clean?(repo, cookbook)
-          # delete the repo 
+          # delete the repo
           ui.info("Processing [ DELETE  ] #{repo}")
-          FileUtils.remove_entry(cookbook) 
+          FileUtils.remove_entry(cookbook)
         end
       else
         puts "cannot find repo path for: #{repo}" unless config[:all]
@@ -100,14 +100,14 @@ module KnifeGithubCleanup
       unless status.stdout == "# On branch master\nnothing to commit (working directory clean)\n"
         ui.info("Processing [ COMMIT  ] #{repo} (Action needed!)")
         status.stdout.lines.each { |l| puts l.sub( /^/, "    ") }
-        return false   
+        return false
       end
       log = shell_out!("git log --branches --not --remotes --simplify-by-decoration --decorate --oneline", :cwd => cookbook)
       unless log.stdout.empty?
         ui.info("Processing [ BRANCH  ] #{repo} (Action needed!)")
         ui.info("    Please check your branches, one of them has unsaved changes")
         log.stdout.lines.each { |l| puts l.sub( /^/, "    ") }
-        return false   
+        return false
       end
       return true
     end

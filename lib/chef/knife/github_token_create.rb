@@ -36,14 +36,14 @@ module KnifeGithubTokenCreate
     # -t --github_token		Authentication token for the github.
     # -U --github_user_repo	Create the cookbook in the user environment.
     #
-    
+
     deps do
       require 'highline'
       require 'chef/knife/github_base'
       include Chef::Knife::GithubBase
       require 'chef/mixin/shell_out'
     end
-      
+
     banner "knife github token create <username> (options)"
     category "github"
 
@@ -63,7 +63,7 @@ module KnifeGithubTokenCreate
       extend Chef::Mixin::ShellOut
 
       # validate base options from base module.
-      validate_base_options      
+      validate_base_options
 
       # Display information if debug mode is on.
       display_debug_info
@@ -82,10 +82,10 @@ module KnifeGithubTokenCreate
 
       puts "Finished updating your token. Using key:#{token}"
     end
- 
+
     # Updates the knife configuration with the token information inside ~/.chef/knife.rb
     # @param token [String] token key
-    # 
+    #
     def update_knife_config(token)
       contents = ''
       update = false
@@ -95,7 +95,7 @@ module KnifeGithubTokenCreate
           Chef::Log.debug("Replacing current token with: #{token}")
           contents = contents << "knife[:github_token] = \"#{token}\"\n"
           update = true
-        else 
+        else
           contents = contents << line
         end
       end
@@ -139,12 +139,12 @@ module KnifeGithubTokenCreate
 
       if token_key.nil?
         result = create_github_token(params)
-        token_key = result['token']        
+        token_key = result['token']
       end
 
       return token_key
     end
- 
+
 
     # Create the OAuth authentication token for the knife-github application.
     # @param params             [Hash]          Hash containing all options

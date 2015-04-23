@@ -29,7 +29,7 @@ require 'chef/knife'
         include Chef::Knife::GithubBase
         require 'chef/mixin/shell_out'
       end
-      
+
       banner "knife github clone COOKBOOK (options)"
       category "github"
 
@@ -51,7 +51,7 @@ require 'chef/knife'
 	extend Chef::Mixin::ShellOut
 
         # validate base options from base module.
-        validate_base_options      
+        validate_base_options
 
         # Display information if debug mode is on.
         display_debug_info
@@ -107,7 +107,7 @@ require 'chef/knife'
           ui.info("Processing [ CLONE   ] #{cookbook_name}")
           Chef::Log.info("Cloning repository to: #{cookbook_path}")
           Chef::Log.debug("Using url: #{clone_url}")
-          shell_out!("git clone #{clone_url} #{cookbook_path}") 
+          shell_out!("git clone #{clone_url} #{cookbook_path}")
         end
       end
 

@@ -20,13 +20,13 @@ require 'chef/knife'
 
     module GithubDiff
     # Implements a diff function between your downloaded copy from git and what is in the Chef Server
-    # 
+    #
     # By default, it expects that you have already done knife github download COOKBOOK
     #
     # knife github diff cookbook_name [Version]
-    # 
+    #
     # You can also diff a cookbook against the github version bu using the -g option
-    # 
+    #
     # You can also optionally give a version on the command line
     class GithubDiff < Chef::Knife
 
@@ -35,7 +35,7 @@ require 'chef/knife'
 
         include Chef::Knife::GithubBase
       end
-      
+
       banner "knife github diff COOKBOOK [version] (options)"
       category "github"
 
@@ -50,7 +50,7 @@ require 'chef/knife'
       # The run method.  The entry point into the class
 
         # validate base options from base module.
-        validate_base_options      
+        validate_base_options
 
         # Display information if debug mode is on.
         display_debug_info
@@ -67,11 +67,11 @@ require 'chef/knife'
         if @cookbook_name
           repo = get_all_repos.select { |k,v| v["name"] == @cookbook_name }
         else
-          #repos = all_repos 
+          #repos = all_repos
           Chef::Log.error("Please specify a cookbook name")
           exit 1
         end
-        
+
         if repo.empty?
           Chef::Log.error("Cannot find the repository: #{} within github")
           exit 1
@@ -147,6 +147,6 @@ require 'chef/knife'
           end
         end
         return version
-      end 
+      end
   end
 end

@@ -23,24 +23,24 @@ module KnifeGithubRepoFork
     # Implements the knife github repo fork function
     #
     # == Overview
-    # The command will fork the repo into user-space 
+    # The command will fork the repo into user-space
     #
     # === Examples
     # Fork a new cookbook:
     #    knife github repo fork <name>
     #
-    
+
     deps do
       require 'chef/knife/github_base'
       include Chef::Knife::GithubBase
     end
-      
+
     banner "knife github repo fork <name> [owner] [target] (options)"
     category "github"
 
     def run
       # validate base options from base module.
-      validate_base_options      
+      validate_base_options
 
       # Display information if debug mode is on.
       display_debug_info
@@ -49,11 +49,11 @@ module KnifeGithubRepoFork
       name = name_args[0]
       name_args[1].nil? ? owner = locate_config_value('github_organizations').first : owner = name_args[1]
       target = name_args[2] unless name_args[2].nil?
-  
-      if owner.nil? || name.nil? || owner.empty? || name.empty? 
+
+      if owner.nil? || name.nil? || owner.empty? || name.empty?
         Chef::Log.error("Please specify a repository name like: name ")
         exit 1
-      end 
+      end
 
       # Set params for the rest request
       params = {}
@@ -73,6 +73,6 @@ module KnifeGithubRepoFork
         puts "Fork of #{name} is created in #{username}"
       end
     end
- 
+
   end
 end

@@ -1,6 +1,6 @@
 require 'mixlib/versioning'
 require 'knife-github/connection'
- 
+
 module Github
   class Repo
 
@@ -24,8 +24,8 @@ module Github
       @tags_all    = repo['tags_all']
       @tags_last   = repo['tags_last']
     end
- 
-    attr_reader :name, :id, :updated_at 
+
+    attr_reader :name, :id, :updated_at
     attr_writer :tags_all, :tags_last
 
     def last_tag?
@@ -35,7 +35,7 @@ module Github
     def to_s
       @name
     end
-    
+
     def update_tags!
       if @tags_url
         @tags_all = get_tags(@tags_url)
@@ -45,7 +45,7 @@ module Github
     end
 
     def to_hash
-      { 
+      {
         'id'          => @id,
         'name'        => @name,
         'description' => @description,
@@ -62,12 +62,12 @@ module Github
         'clone_url'   => @clone_url,
         'tags_url'    => @tags_url,
         'tags_all'    => @tags_all,
-        'tags_last'   => @tags_last 
+        'tags_last'   => @tags_last
       }
     end
 
     def get_repo_data(orgs)
-      orgs.each do |org| 
+      orgs.each do |org|
         get_org_data(org)
       end
     end
@@ -79,12 +79,12 @@ module Github
       params = {}
       params[:url] = url
       params[:action] = "GET"
-      params[:token] = Chef::Config[:knife][:github_token] 
+      params[:token] = Chef::Config[:knife][:github_token]
       result = connection.request(params)
       result.each { |tag| tags.push(tag['name']) if tag['name'] =~ /^(\d*)\.(\d*)\.(\d*)$/ }
       tags || nil
     end
- 
+
     def get_last_tag(tags)
       return nil if tags.nil? || tags.empty?
       base, last = "0.0.0", nil
@@ -107,7 +107,7 @@ module Github
       # Instance variables
       @repos = Array.new
     end
- 
+
     def push(aRepo)
       pos = self.find_index(aRepo.name)
       if pos

@@ -28,7 +28,7 @@ module KnifeGithubList
         require 'chef/knife/github_baselist'
         include Chef::Knife::GithubBaseList
       end
-      
+
       banner "knife github list [COOKBOOK] (options)"
       category "github"
 
@@ -41,7 +41,7 @@ module KnifeGithubList
       def run
 
         # validate base options from base module.
-        validate_base_options      
+        validate_base_options
 
         # Display information if debug mode is on.
         display_debug_info
@@ -54,7 +54,7 @@ module KnifeGithubList
 
         #Get the github link
         git_link = get_repo_clone_link
-    
+
         # Filter all repo information based on the tags that we can find
         if config[:fields] || config[:fieldlist]
           all_repos = get_all_repos
@@ -80,7 +80,7 @@ module KnifeGithubList
         if @cookbook_name
           repos = all_repos.select { |k,v| v["name"] == @cookbook_name }
         else
-          repos = all_repos 
+          repos = all_repos
         end
 
         columns = [ 'name,Chef Store', 'git_url,Github Store' ]

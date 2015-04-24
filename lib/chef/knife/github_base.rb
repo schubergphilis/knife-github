@@ -344,14 +344,6 @@ class Chef
             end
             token
           end
-
-          # Create the json body with repo config for POST information
-          # @param name [String] cookbook name
-          def get_body_json()
-            body = {
-              "scopes" => ["public_repo"]
-            }.to_json
-          end
         end
       end
     end

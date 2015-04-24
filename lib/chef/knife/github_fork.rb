@@ -57,10 +57,10 @@ module KnifeGithubFork
 
       # Set params for the rest request
       params = {}
-      params[:url] = @github_url + "/api/" + @github_api_version + "/repos/#{owner}/#{name}/forks"
-      params[:body] = get_body_json(target) unless target.nil?
-      params[:token] = get_github_token()
-      params[:action]  = "POST"
+      params[:url]    = @github_url + "/api/" + @github_api_version + "/repos/#{owner}/#{name}/forks"
+      params[:body]   = { 'scopes' => ['public_repo'] }.to_json
+      params[:token]  = get_github_token()
+      params[:action] = "POST"
 
       # Execute the rest request
       username = ENV['USER']

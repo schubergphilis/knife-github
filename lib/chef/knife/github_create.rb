@@ -19,23 +19,19 @@
 require 'chef/knife'
 require 'etc'
 
-module KnifeGithubRepoCreate
-  class GithubRepoCreate < Chef::Knife
-    # Implements the knife github repo create function
+module KnifeGithubCreate
+  class GithubCreate < Chef::Knife
+    # Implements the knife github create function
     #
     # == Overview
-    # The command will create a empty cookbook structure and it will commit this one into the github.
+    # The command will create an empty cookbook structure from a template and push it to GitHub
     #
     # === Examples
     # Create a new cookbook:
-    #    knife github repo create <name> <here you give your cookbook description>
-    #
-    #   #  Deploy a release version of cookbook to your chef server
-    #   #     knife github deploy cookbook_name -f
+    #    knife github create COOKBOOK [description] (options)
     #
     # === Options
-    # -t --github_token		Authentication token for the github.
-    # -U --github_user_repo	Create the cookbook in the user environment.
+    # -U --github_user_repo	Create the cookbook in your user environment
     #
 
     deps do
@@ -45,13 +41,13 @@ module KnifeGithubRepoCreate
       require 'readline'
     end
 
-    banner "knife github repo create <name> <description> (options)"
+    banner 'knife github create COOKBOOK [description] (options)'
     category "github"
 
     option :github_user_repo,
            :short => "-U",
            :long => "--github_user_repo",
-           :description => "Create the repo within your user environment",
+           :description => "Create the cookbook in your user environment",
            :boolean => true
 
     def run
@@ -298,6 +294,5 @@ module KnifeGithubRepoCreate
         "has_downloads" => true
       }.to_json
     end
-
   end
 end

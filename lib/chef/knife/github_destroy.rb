@@ -18,20 +18,20 @@
 
 require 'chef/knife'
 require 'etc'
-module KnifeGithubRepoDestroy
-  class GithubRepoDestroy < Chef::Knife
-    # Implements the knife github repo destroy function
+
+module KnifeGithubDestroy
+  class GithubDestroy < Chef::Knife
+    # Implements the knife github destroy function
     #
     # == Overview
-    # The command will delete and destroy your repo on the github.
+    # The command will delete and destroy a cookbook repo on GitHub.
     #
     # === Examples
     # Destroy a repository:
-    #    knife github repo destroy <name>
+    #    knife github destroy COOKBOOK (options)
     #
     # === Options
-    # -t --github_token		Authentication token for the github.
-    # -U --github_user_repo	Destroy the cookbook in the user environment.
+    # -U --github_user_repo	Destroy the cookbook in the user environment
     #
 
     deps do
@@ -40,18 +40,13 @@ module KnifeGithubRepoDestroy
       require 'chef/mixin/shell_out'
     end
 
-    banner "knife github repo destroy <name> (options)"
+    banner 'knife github destroy COOKBOOK (options)'
     category "github"
-
-    option :github_token,
-           :short => "-t",
-           :long => "--github_token",
-           :description => "Your github token for OAuth authentication"
 
     option :github_user_repo,
            :short => "-U",
            :long => "--github_user_repo",
-           :description => "Create the repo within your user environment",
+           :description => "Destroy the cookbook in the user environment",
            :boolean => true
 
     def run
@@ -105,7 +100,7 @@ module KnifeGithubRepoDestroy
       # Updateing metadata.rb if needed.
       # update_metadata(cookbook_path)
 
-      # Creating the github repository
+      # Deleting the github repository
       params = {}
       params[:url] = url
       params[:token] = token
@@ -205,6 +200,5 @@ module KnifeGithubRepoDestroy
       create.config[:cookbook_path] = tmp
       create.run
     end
-
   end
 end

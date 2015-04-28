@@ -27,43 +27,43 @@ module KnifeGithubTokenCreate
     #
     # === Examples
     # Create a new token:
-    #    knife github token create <username>
+    #    knife github token create USERNAME
     #
-    #   #  Deploy a release version of cookbook to your chef server
-    #   #     knife github deploy cookbook_name -f
+    # Write token to ~/.github_token:
+    #    knife github token create USERNAME -o ~/.github_token
     #
     # === Options
-    # -t --github_token		Authentication token for the github.
-    # -U --github_user_repo	Create the cookbook in the user environment.
+    # -f --force		Force token creation for OAuth authentication
+    # -o, --output-file FILE    File to write OAuth token to (default: ~/.chef/knife.rb)
     #
-    
+
     deps do
       require 'highline'
       require 'chef/knife/github_base'
       include Chef::Knife::GithubBase
       require 'chef/mixin/shell_out'
     end
-      
-    banner "knife github token create <username> (options)"
+
+    banner 'knife github token create USERNAME (options)'
     category "github"
 
     option :force,
-           :short => "-f",
-           :long => "--force",
-           :description => "Force token creation for OAuth authentication",
-           :boolean => true
+           :short       => '-f',
+           :long        => '--force',
+           :description => 'Force token creation for OAuth authentication',
+           :boolean     => true
 
-    option :github_user_repo,
-           :short => "-U",
-           :long => "--github_user_repo",
-           :description => "Create the repo within your user environment",
-           :boolean => true
+    option :output_file,
+           :short       => '-o FILE',
+           :long        => '--output-file FILE',
+           :description => 'File to write OAuth token to (default: ~/.chef/knife.rb)',
+           :default     => '~/.chef/knife.rb'
 
     def run
       extend Chef::Mixin::ShellOut
 
       # validate base options from base module.
-      validate_base_options      
+      validate_base_options
 
       # Display information if debug mode is on.
       display_debug_info
@@ -72,38 +72,38 @@ module KnifeGithubTokenCreate
       username = name_args.first
 
       # Get token information
-      token = get_github_token() unless config[:force]
+      token = get_github_token unless config[:force]
 
       # Create github token if needed
       if token.nil?
         token = validate_github_token(username)
-        update_knife_config(token)
+        update_knife_config(File.expand_path(config[:output_file]), token)
       end
 
       puts "Finished updating your token. Using key:#{token}"
     end
- 
+
     # Updates the knife configuration with the token information inside ~/.chef/knife.rb
     # @param token [String] token key
-    # 
-    def update_knife_config(token)
-      contents = ''
-      update = false
-      config   = File.join(ENV["HOME"], ".chef/knife.rb")
+    #
+    def update_knife_config(config, token)
+      contents = []
+      update   = false
       File.foreach(config) do |line|
         if line =~ /^\s*knife\[:github_token\].*/ && !token.nil?
           Chef::Log.debug("Replacing current token with: #{token}")
-          contents = contents << "knife[:github_token] = \"#{token}\"\n"
+          contents << "knife[:github_token] = \"#{token}\"\n"
           update = true
-        else 
-          contents = contents << line
+        else
+          contents << line
         end
       end
       unless update
         Chef::Log.debug("Updating configuration with token: #{token}")
-        contents = contents << "knife[:github_token] = \"#{token}\"\n"
+        contents << "\n" unless contents.last == "\n"
+        contents << "# GitHub OAuth Token\nknife[:github_token] = \"#{token}\"\n"
       end
-      File.open(config, 'w') {|f| f.write(contents) }
+      File.open(config, 'w') { |f| f.write(contents.join) }
       return true
     end
 
@@ -139,12 +139,11 @@ module KnifeGithubTokenCreate
 
       if token_key.nil?
         result = create_github_token(params)
-        token_key = result['token']        
+        token_key = result['token']
       end
 
       return token_key
     end
- 
 
     # Create the OAuth authentication token for the knife-github application.
     # @param params             [Hash]          Hash containing all options
@@ -165,6 +164,5 @@ module KnifeGithubTokenCreate
       params[:action] = "DELETE"
       connection.request(params)
     end
-
   end
 end

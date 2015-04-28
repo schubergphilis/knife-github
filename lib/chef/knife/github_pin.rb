@@ -21,7 +21,7 @@ require 'chef/knife'
 module KnifeGithubPin
 
     # Pin a specific cookbook version to an environment
-    # 
+    #
     # Not specifically a github function but, sits nicely in with
     # download, deploy and so on
     # In some respects does duplicate some functionality that can be found
@@ -34,7 +34,7 @@ module KnifeGithubPin
         require "json"
         include Chef::Knife::GithubBase
       end
-      
+
       banner "knife github pin COOKBOOK [version] [environment]"
       category "github"
 
@@ -42,7 +42,7 @@ module KnifeGithubPin
         # The run method.  The entry point into the class
 
         # validate base options from base module.
-        validate_base_options      
+        validate_base_options
 
         # Display information if debug mode is on.
         display_debug_info
@@ -51,7 +51,7 @@ module KnifeGithubPin
         @cookbook_name = name_args.first unless name_args.empty?
         @version = nil
         @env     = nil
- 
+
         if @cookbook_name.nil?
            Chef::Log.error("You must specify a cookbook name to use this module")
            exit 1;

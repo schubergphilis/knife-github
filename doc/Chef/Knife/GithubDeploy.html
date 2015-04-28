@@ -5,9 +5,9 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>
   Class: Chef::Knife::GithubDeploy
-  
+
     &mdash; Knife Github utilities
-  
+
 </title>
 
   <link rel="stylesheet" href="../../css/style.css" type="text/css" charset="utf-8" />
@@ -30,33 +30,33 @@
   <body>
     <div id="header">
       <div id="menu">
-  
+
     <a href="../../_index.html">Index (G)</a> &raquo;
     <span class='title'><span class='object_link'><a href="../../Chef.html" title="Chef (class)">Chef</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Knife.html" title="Chef::Knife (class)">Knife</a></span></span>
-     &raquo; 
+     &raquo;
     <span class="title">GithubDeploy</span>
-  
+
 
   <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
 </div>
 
       <div id="search">
-  
+
     <a class="full_list_link" id="class_list_link"
         href="../../class_list.html">
       Class List
     </a>
-  
+
     <a class="full_list_link" id="method_list_link"
         href="../../method_list.html">
       Method List
     </a>
-  
+
     <a class="full_list_link" id="file_list_link"
         href="../../file_list.html">
       File List
     </a>
-  
+
 </div>
       <div class="clear"></div>
     </div>
@@ -64,46 +64,46 @@
     <iframe id="search_frame"></iframe>
 
     <div id="content"><h1>Class: Chef::Knife::GithubDeploy
-  
-  
-  
+
+
+
 </h1>
 
 <dl class="box">
-  
+
     <dt class="r1">Inherits:</dt>
     <dd class="r1">
       <span class="inheritName"><span class='object_link'><a href="../Knife.html" title="Chef::Knife (class)">Chef::Knife</a></span></span>
-      
+
         <ul class="fullTree">
           <li>Object</li>
-          
+
             <li class="next"><span class='object_link'><a href="../Knife.html" title="Chef::Knife (class)">Chef::Knife</a></span></li>
-          
+
             <li class="next">Chef::Knife::GithubDeploy</li>
-          
+
         </ul>
         <a href="#" class="inheritanceTree">show all</a>
-      
+
       </dd>
-    
-  
-  
-    
-  
-    
-  
-  
-  
+
+
+
+
+
+
+
+
+
     <dt class="r2 last">Defined in:</dt>
     <dd class="r2 last">lib/chef/knife/github_deploy.rb</dd>
-  
+
 </dl>
 <div class="clear"></div>
 
 <h2>Overview</h2><div class="docstring">
   <div class="discussion">
-    
+
 <p>Implements the knife github deploy function</p>
 <table class="rdoc-list"><tr><td class="rdoc-term"><p>@author</p></td>
 <td>
@@ -166,7 +166,7 @@ cookbook's metadata</p>
   </div>
 </div>
 <div class="tags">
-  
+
 
 </div>
 
@@ -175,285 +175,285 @@ cookbook's metadata</p>
 
 
 
-  
+
     <h2>
       Instance Method Summary
       <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
     </h2>
 
     <ul class="summary">
-      
+
         <li class="public ">
   <span class="summary_signature">
-    
+
       <a href="#checkout_tag-instance_method" title="#checkout_tag (instance method)">- (Object) <strong>checkout_tag</strong>(version) </a>
-    
 
-    
+
+
   </span>
-  
-  
-  
-  
-  
-  
-  
 
-  
+
+
+
+
+
+
+
+
     <span class="summary_desc"><div class='inline'>
 <p>If a tag is available in github check it out Potentially quite dangerous as
 it could cause code to get rolled back.</p>
 </div></span>
-  
+
 </li>
 
-      
+
         <li class="public ">
   <span class="summary_signature">
-    
+
       <a href="#choose_version-instance_method" title="#choose_version (instance method)">- (String) <strong>choose_version</strong>(version) </a>
-    
 
-    
+
+
   </span>
-  
-  
-  
-  
-  
-  
-  
 
-  
+
+
+
+
+
+
+
+
     <span class="summary_desc"><div class='inline'>
 <p>Increment the current version according to the config options <a
 href="http://major">config</a> <a href="http://minor">config</a> <a
 href="http://patch">config</a> Method will exit if the user chooses not to
 increment the version.</p>
 </div></span>
-  
+
 </li>
 
-      
+
         <li class="public ">
   <span class="summary_signature">
-    
+
       <a href="#cookbook_upload-instance_method" title="#cookbook_upload (instance method)">- (Object) <strong>cookbook_upload</strong> </a>
-    
 
-    
+
+
   </span>
-  
-  
-  
-  
-  
-  
-  
 
-  
+
+
+
+
+
+
+
+
     <span class="summary_desc"><div class='inline'>
 <p>Upload the cookbook to chef server If mode is final, freeze the cookbook.</p>
 </div></span>
-  
+
 </li>
 
-      
+
         <li class="public ">
   <span class="summary_signature">
-    
+
       <a href="#do_commit-instance_method" title="#do_commit (instance method)">- (Object) <strong>do_commit</strong>(version, push) </a>
-    
 
-    
+
+
   </span>
-  
-  
-  
-  
-  
-  
-  
 
-  
+
+
+
+
+
+
+
+
     <span class="summary_desc"><div class='inline'>
 <p>Commit changes in git.</p>
 </div></span>
-  
+
 </li>
 
-      
+
         <li class="public ">
   <span class="summary_signature">
-    
+
       <a href="#get_cookbook_chef_versions-instance_method" title="#get_cookbook_chef_versions (instance method)">- (Object) <strong>get_cookbook_chef_versions</strong> </a>
-    
 
-    
+
+
   </span>
-  
-  
-  
-  
-  
-  
-  
 
-  
+
+
+
+
+
+
+
+
     <span class="summary_desc"><div class='inline'>
 <p>Get a sorted array of version for the cookbook.</p>
 </div></span>
-  
+
 </li>
 
-      
+
         <li class="public ">
   <span class="summary_signature">
-    
+
       <a href="#get_cookbook_path-instance_method" title="#get_cookbook_path (instance method)">- (String) <strong>get_cookbook_path</strong>(cookbook) </a>
-    
 
-    
+
+
   </span>
-  
-  
-  
-  
-  
-  
-  
 
-  
+
+
+
+
+
+
+
+
     <span class="summary_desc"><div class='inline'>
 <p>Determine if the current cookbook path is valid and that there is a
 cookbook of the correct name in there.</p>
 </div></span>
-  
+
 </li>
 
-      
+
         <li class="public ">
   <span class="summary_signature">
-    
+
       <a href="#get_cookbook_version-instance_method" title="#get_cookbook_version (instance method)">- (Object) <strong>get_cookbook_version</strong> </a>
-    
 
-    
+
+
   </span>
-  
-  
-  
-  
-  
-  
-  
 
-  
+
+
+
+
+
+
+
+
     <span class="summary_desc"><div class='inline'>
 <p>Get the version number in the git version of the cookbook.</p>
 </div></span>
-  
+
 </li>
 
-      
+
         <li class="public ">
   <span class="summary_signature">
-    
+
       <a href="#run-instance_method" title="#run (instance method)">- (Object) <strong>run</strong> </a>
-    
 
-    
+
+
   </span>
-  
-  
-  
-  
-  
-  
-  
 
-  
+
+
+
+
+
+
+
+
     <span class="summary_desc"><div class='inline'></div></span>
-  
+
 </li>
 
-      
+
         <li class="public ">
   <span class="summary_signature">
-    
+
       <a href="#set_cookbook_version-instance_method" title="#set_cookbook_version (instance method)">- (Object) <strong>set_cookbook_version</strong>(version) </a>
-    
 
-    
+
+
   </span>
-  
-  
-  
-  
-  
-  
-  
 
-  
+
+
+
+
+
+
+
+
     <span class="summary_desc"><div class='inline'>
 <p>Set the version in metadata.rb.</p>
 </div></span>
-  
+
 </li>
 
-      
+
         <li class="public ">
   <span class="summary_signature">
-    
+
       <a href="#up_version-instance_method" title="#up_version (instance method)">- (String) <strong>up_version</strong>(version) </a>
-    
 
-    
+
+
   </span>
-  
-  
-  
-  
-  
-  
-  
 
-  
+
+
+
+
+
+
+
+
     <span class="summary_desc"><div class='inline'>
 <p>Ask user to increment current/desired version number Method will exit if
 the user chooses not to increment the version.</p>
 </div></span>
-  
+
 </li>
 
-      
+
     </ul>
-  
 
 
-  
-  
-  
-  
-  
-  
+
+
+
+
+
+
+
 
   <div id="instance_method_details" class="method_details_list">
     <h2>Instance Method Details</h2>
 
-    
+
       <div class="method_details first">
   <h3 class="signature first" id="checkout_tag-instance_method">
-  
-    - (<tt>Object</tt>) <strong>checkout_tag</strong>(version) 
-  
 
-  
+    - (<tt>Object</tt>) <strong>checkout_tag</strong>(version)
 
-  
+
+
+
+
 </h3><div class="docstring">
   <div class="discussion">
-    
+
 <p>If a tag is available in github check it out Potentially quite dangerous as
 it could cause code to get rolled back</p>
 
@@ -463,23 +463,23 @@ it could cause code to get rolled back</p>
 <div class="tags">
   <p class="tag_title">Parameters:</p>
 <ul class="param">
-  
+
     <li>
-      
+
         <span class='name'>version</span>
-      
-      
+
+
         <span class='type'>(<tt>String</tt>)</span>
-      
-      
-      
+
+
+
         &mdash;
         <div class='inline'>
 <p>Version</p>
 </div>
-      
+
     </li>
-  
+
 </ul>
 
 
@@ -517,19 +517,19 @@ it could cause code to get rolled back</p>
   </tr>
 </table>
 </div>
-    
+
       <div class="method_details ">
   <h3 class="signature " id="choose_version-instance_method">
-  
-    - (<tt>String</tt>) <strong>choose_version</strong>(version) 
-  
 
-  
+    - (<tt>String</tt>) <strong>choose_version</strong>(version)
 
-  
+
+
+
+
 </h3><div class="docstring">
   <div class="discussion">
-    
+
 <p>Increment the current version according to the config options <a
 href="http://major">config</a> <a href="http://minor">config</a> <a
 href="http://patch">config</a> Method will exit if the user chooses not to
@@ -541,42 +541,42 @@ increment the version</p>
 <div class="tags">
   <p class="tag_title">Parameters:</p>
 <ul class="param">
-  
+
     <li>
-      
+
         <span class='name'>version</span>
-      
-      
+
+
         <span class='type'>(<tt>String</tt>)</span>
-      
-      
-      
+
+
+
         &mdash;
         <div class='inline'>
 <p>Version</p>
 </div>
-      
+
     </li>
-  
+
 </ul>
 
 <p class="tag_title">Returns:</p>
 <ul class="return">
-  
+
     <li>
-      
-      
+
+
         <span class='type'>(<tt>String</tt>)</span>
-      
-      
-      
+
+
+
         &mdash;
         <div class='inline'>
 <p>New version number</p>
 </div>
-      
+
     </li>
-  
+
 </ul>
 
 </div><table class="source_code">
@@ -625,26 +625,26 @@ increment the version</p>
   </tr>
 </table>
 </div>
-    
+
       <div class="method_details ">
   <h3 class="signature " id="cookbook_upload-instance_method">
-  
-    - (<tt>Object</tt>) <strong>cookbook_upload</strong> 
-  
 
-  
+    - (<tt>Object</tt>) <strong>cookbook_upload</strong>
 
-  
+
+
+
+
 </h3><div class="docstring">
   <div class="discussion">
-    
+
 <p>Upload the cookbook to chef server If mode is final, freeze the cookbook</p>
 
 
   </div>
 </div>
 <div class="tags">
-  
+
 
 </div><table class="source_code">
   <tr>
@@ -668,7 +668,7 @@ increment the version</p>
     <td>
       <pre class="code"><span class="info file"># File 'lib/chef/knife/github_deploy.rb', line 253</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_cookbook_upload'>cookbook_upload</span><span class='lparen'>(</span><span class='rparen'>)</span> 
+<span class='kw'>def</span> <span class='id identifier rubyid_cookbook_upload'>cookbook_upload</span><span class='lparen'>(</span><span class='rparen'>)</span>
     <span class='comment'># Git meuk should not be uploaded use chefignore file instead
 </span>    <span class='comment'># FileUtils.remove_entry(&quot;#{@github_tmp}/git/#{@cookbook_name}/.git&quot;)
 </span>		  <span class='id identifier rubyid_args'>args</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>cookbook</span><span class='tstring_end'>'</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>'</span><span class='tstring_content'>upload</span><span class='tstring_end'>'</span></span><span class='comma'>,</span>  <span class='ivar'>@cookbook_name</span> <span class='rbracket'>]</span>
@@ -684,19 +684,19 @@ increment the version</p>
   </tr>
 </table>
 </div>
-    
+
       <div class="method_details ">
   <h3 class="signature " id="do_commit-instance_method">
-  
-    - (<tt>Object</tt>) <strong>do_commit</strong>(version, push) 
-  
 
-  
+    - (<tt>Object</tt>) <strong>do_commit</strong>(version, push)
 
-  
+
+
+
+
 </h3><div class="docstring">
   <div class="discussion">
-    
+
 <p>Commit changes in git</p>
 
 
@@ -705,39 +705,39 @@ increment the version</p>
 <div class="tags">
   <p class="tag_title">Parameters:</p>
 <ul class="param">
-  
+
     <li>
-      
+
         <span class='name'>version</span>
-      
-      
+
+
         <span class='type'>(<tt>String</tt>)</span>
-      
-      
-      
+
+
+
         &mdash;
         <div class='inline'>
 <p>cookbook version</p>
 </div>
-      
+
     </li>
-  
+
     <li>
-      
+
         <span class='name'>push</span>
-      
-      
+
+
         <span class='type'>(<tt>Bool</tt>)</span>
-      
-      
-      
+
+
+
         &mdash;
         <div class='inline'>
 <p>true is the cookbook should also be pushed</p>
 </div>
-      
+
     </li>
-  
+
 </ul>
 
 
@@ -797,26 +797,26 @@ increment the version</p>
   </tr>
 </table>
 </div>
-    
+
       <div class="method_details ">
   <h3 class="signature " id="get_cookbook_chef_versions-instance_method">
-  
-    - (<tt>Object</tt>) <strong>get_cookbook_chef_versions</strong> 
-  
 
-  
+    - (<tt>Object</tt>) <strong>get_cookbook_chef_versions</strong>
 
-  
+
+
+
+
 </h3><div class="docstring">
   <div class="discussion">
-    
+
 <p>Get a sorted array of version for the cookbook</p>
 
 
   </div>
 </div>
 <div class="tags">
-  
+
 
 </div><table class="source_code">
   <tr>
@@ -844,19 +844,19 @@ increment the version</p>
   </tr>
 </table>
 </div>
-    
+
       <div class="method_details ">
   <h3 class="signature " id="get_cookbook_path-instance_method">
-  
-    - (<tt>String</tt>) <strong>get_cookbook_path</strong>(cookbook) 
-  
 
-  
+    - (<tt>String</tt>) <strong>get_cookbook_path</strong>(cookbook)
 
-  
+
+
+
+
 </h3><div class="docstring">
   <div class="discussion">
-    
+
 <p>Determine if the current cookbook path is valid and that there is a
 cookbook of the correct name in there</p>
 
@@ -866,42 +866,42 @@ cookbook of the correct name in there</p>
 <div class="tags">
   <p class="tag_title">Parameters:</p>
 <ul class="param">
-  
+
     <li>
-      
+
         <span class='name'>cookbook</span>
-      
-      
+
+
         <span class='type'>(<tt>String</tt>)</span>
-      
-      
-      
+
+
+
         &mdash;
         <div class='inline'>
 <p>cookbook name</p>
 </div>
-      
+
     </li>
-  
+
 </ul>
 
 <p class="tag_title">Returns:</p>
 <ul class="return">
-  
+
     <li>
-      
-      
+
+
         <span class='type'>(<tt>String</tt>)</span>
-      
-      
-      
+
+
+
         &mdash;
         <div class='inline'>
 <p>Path to cookbook</p>
 </div>
-      
+
     </li>
-  
+
 </ul>
 
 </div><table class="source_code">
@@ -917,26 +917,26 @@ cookbook of the correct name in there</p>
     <td>
       <pre class="code"><span class="info file"># File 'lib/chef/knife/github_deploy.rb', line 311</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_get_cookbook_path'>get_cookbook_path</span><span class='lparen'>(</span><span class='id identifier rubyid_cookbook'>cookbook</span><span class='rparen'>)</span> 
+<span class='kw'>def</span> <span class='id identifier rubyid_get_cookbook_path'>get_cookbook_path</span><span class='lparen'>(</span><span class='id identifier rubyid_cookbook'>cookbook</span><span class='rparen'>)</span>
     <span class='kw'>return</span> <span class='id identifier rubyid_cookbook_path_valid?'>cookbook_path_valid?</span><span class='lparen'>(</span><span class='id identifier rubyid_cookbook'>cookbook</span><span class='comma'>,</span> <span class='kw'>false</span><span class='rparen'>)</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
 </table>
 </div>
-    
+
       <div class="method_details ">
   <h3 class="signature " id="get_cookbook_version-instance_method">
-  
-    - (<tt>Object</tt>) <strong>get_cookbook_version</strong> 
-  
 
-  
+    - (<tt>Object</tt>) <strong>get_cookbook_version</strong>
 
-  
+
+
+
+
 </h3><div class="docstring">
   <div class="discussion">
-    
+
 <p>Get the version number in the git version of the cookbook</p>
 
 
@@ -945,23 +945,23 @@ cookbook of the correct name in there</p>
 <div class="tags">
   <p class="tag_title">Parameters:</p>
 <ul class="param">
-  
+
     <li>
-      
+
         <span class='name'>version</span>
-      
-      
+
+
         <span class='type'>(<tt>String</tt>)</span>
-      
-      
-      
+
+
+
         &mdash;
         <div class='inline'>
 <p>Version</p>
 </div>
-      
+
     </li>
-  
+
 </ul>
 
 
@@ -1009,16 +1009,16 @@ cookbook of the correct name in there</p>
   </tr>
 </table>
 </div>
-    
+
       <div class="method_details ">
   <h3 class="signature " id="run-instance_method">
-  
-    - (<tt>Object</tt>) <strong>run</strong> 
-  
 
-  
+    - (<tt>Object</tt>) <strong>run</strong>
 
-  
+
+
+
+
 </h3><table class="source_code">
   <tr>
     <td>
@@ -1143,7 +1143,7 @@ cookbook of the correct name in there</p>
 <span class='kw'>def</span> <span class='id identifier rubyid_run'>run</span>
   <span class='comment'># Main run entry point for the class
 </span>
-  <span class='id identifier rubyid_validate_base_options'>validate_base_options</span>      
+  <span class='id identifier rubyid_validate_base_options'>validate_base_options</span>
 
   <span class='id identifier rubyid_display_debug_info'>display_debug_info</span>
 
@@ -1210,7 +1210,7 @@ cookbook of the correct name in there</p>
       <span class='id identifier rubyid_inChef'>inChef</span> <span class='op'>=</span> <span class='kw'>false</span>
   <span class='kw'>end</span>
 
-  
+
   <span class='kw'>if</span> <span class='id identifier rubyid_config'>config</span><span class='lbracket'>[</span><span class='symbol'>:final</span><span class='rbracket'>]</span>
       <span class='id identifier rubyid_ui'>ui</span><span class='period'>.</span><span class='id identifier rubyid_info'>info</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Using Final mode</span><span class='tstring_end'>&quot;</span></span>
 
@@ -1255,19 +1255,19 @@ cookbook of the correct name in there</p>
   </tr>
 </table>
 </div>
-    
+
       <div class="method_details ">
   <h3 class="signature " id="set_cookbook_version-instance_method">
-  
-    - (<tt>Object</tt>) <strong>set_cookbook_version</strong>(version) 
-  
 
-  
+    - (<tt>Object</tt>) <strong>set_cookbook_version</strong>(version)
 
-  
+
+
+
+
 </h3><div class="docstring">
   <div class="discussion">
-    
+
 <p>Set the version in metadata.rb</p>
 
 
@@ -1276,23 +1276,23 @@ cookbook of the correct name in there</p>
 <div class="tags">
   <p class="tag_title">Parameters:</p>
 <ul class="param">
-  
+
     <li>
-      
+
         <span class='name'>version</span>
-      
-      
+
+
         <span class='type'>(<tt>String</tt>)</span>
-      
-      
-      
+
+
+
         &mdash;
         <div class='inline'>
 <p>cookbook version</p>
 </div>
-      
+
     </li>
-  
+
 </ul>
 
 
@@ -1332,19 +1332,19 @@ cookbook of the correct name in there</p>
   </tr>
 </table>
 </div>
-    
+
       <div class="method_details ">
   <h3 class="signature " id="up_version-instance_method">
-  
-    - (<tt>String</tt>) <strong>up_version</strong>(version) 
-  
 
-  
+    - (<tt>String</tt>) <strong>up_version</strong>(version)
 
-  
+
+
+
+
 </h3><div class="docstring">
   <div class="discussion">
-    
+
 <p>Ask user to increment current/desired version number Method will exit if
 the user chooses not to increment the version</p>
 
@@ -1354,42 +1354,42 @@ the user chooses not to increment the version</p>
 <div class="tags">
   <p class="tag_title">Parameters:</p>
 <ul class="param">
-  
+
     <li>
-      
+
         <span class='name'>version</span>
-      
-      
+
+
         <span class='type'>(<tt>String</tt>)</span>
-      
-      
-      
+
+
+
         &mdash;
         <div class='inline'>
 <p>Version</p>
 </div>
-      
+
     </li>
-  
+
 </ul>
 
 <p class="tag_title">Returns:</p>
 <ul class="return">
-  
+
     <li>
-      
-      
+
+
         <span class='type'>(<tt>String</tt>)</span>
-      
-      
-      
+
+
+
         &mdash;
         <div class='inline'>
 <p>New version number</p>
 </div>
-      
+
     </li>
-  
+
 </ul>
 
 </div><table class="source_code">
@@ -1434,7 +1434,7 @@ the user chooses not to increment the version</p>
   </tr>
 </table>
 </div>
-    
+
   </div>
 
 </div>

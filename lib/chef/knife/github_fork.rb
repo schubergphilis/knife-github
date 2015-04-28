@@ -18,50 +18,49 @@
 
 require 'chef/knife'
 
-module KnifeGithubRepoFork
-  class GithubRepoFork < Chef::Knife
-    # Implements the knife github repo fork function
+module KnifeGithubFork
+  class GithubFork < Chef::Knife
+    # Implements the knife github fork function
     #
     # == Overview
-    # The command will fork the repo into user-space 
+    # The command will fork a cookbook repo into a new location on GitHub
     #
     # === Examples
     # Fork a new cookbook:
-    #    knife github repo fork <name>
+    #    knife github fork COOKBOOK [owner] [target] (options)
     #
-    
+
     deps do
       require 'chef/knife/github_base'
       include Chef::Knife::GithubBase
     end
-      
-    banner "knife github repo fork <name> [owner] [target] (options)"
+
+    banner 'knife github fork COOKBOOK [owner] [target] (options)'
     category "github"
 
     def run
       # validate base options from base module.
-      validate_base_options      
+      validate_base_options
 
       # Display information if debug mode is on.
       display_debug_info
 
       # Get the name_args from the command line
-      name = name_args[0]
-      name_args[1].nil? ? owner = locate_config_value('github_organizations').first : owner = name_args[1]
+      name   = name_args[0]
+      owner  = name_args[1].nil? ? locate_config_value('github_organizations').first : name_args[1]
       target = name_args[2] unless name_args[2].nil?
-  
-      if owner.nil? || name.nil? || owner.empty? || name.empty? 
+
+      if owner.nil? || name.nil? || owner.empty? || name.empty?
         Chef::Log.error("Please specify a repository name like: name ")
         exit 1
-      end 
+      end
 
       # Set params for the rest request
       params = {}
-      params[:url] = @github_url + "/api/" + @github_api_version + "/repos/#{owner}/#{name}/forks"
-      params[:body] = get_body_json(target) unless target.nil?
-      params[:token] = get_github_token()
-      #params[:response_code]  = 202
-      params[:action]  = "POST"
+      params[:url]    = @github_url + "/api/" + @github_api_version + "/repos/#{owner}/#{name}/forks"
+      params[:body]   = { 'scopes' => ['public_repo'] }.to_json
+      params[:token]  = get_github_token()
+      params[:action] = "POST"
 
       # Execute the rest request
       username = ENV['USER']
@@ -73,6 +72,5 @@ module KnifeGithubRepoFork
         puts "Fork of #{name} is created in #{username}"
       end
     end
- 
   end
 end

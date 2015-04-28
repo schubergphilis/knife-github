@@ -5,9 +5,9 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>
   Class: KnifeGithubCleanup::GithubCleanup
-  
+
     &mdash; Knife Github utilities
-  
+
 </title>
 
   <link rel="stylesheet" href="../css/style.css" type="text/css" charset="utf-8" />
@@ -30,33 +30,33 @@
   <body>
     <div id="header">
       <div id="menu">
-  
+
     <a href="../_index.html">Index (G)</a> &raquo;
     <span class='title'><span class='object_link'><a href="../KnifeGithubCleanup.html" title="KnifeGithubCleanup (module)">KnifeGithubCleanup</a></span></span>
-     &raquo; 
+     &raquo;
     <span class="title">GithubCleanup</span>
-  
+
 
   <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
 </div>
 
       <div id="search">
-  
+
     <a class="full_list_link" id="class_list_link"
         href="../class_list.html">
       Class List
     </a>
-  
+
     <a class="full_list_link" id="method_list_link"
         href="../method_list.html">
       Method List
     </a>
-  
+
     <a class="full_list_link" id="file_list_link"
         href="../file_list.html">
       File List
     </a>
-  
+
 </div>
       <div class="clear"></div>
     </div>
@@ -64,40 +64,40 @@
     <iframe id="search_frame"></iframe>
 
     <div id="content"><h1>Class: KnifeGithubCleanup::GithubCleanup
-  
-  
-  
+
+
+
 </h1>
 
 <dl class="box">
-  
+
     <dt class="r1">Inherits:</dt>
     <dd class="r1">
       <span class="inheritName"><span class='object_link'><a href="../Chef/Knife.html" title="Chef::Knife (class)">Chef::Knife</a></span></span>
-      
+
         <ul class="fullTree">
           <li>Object</li>
-          
+
             <li class="next"><span class='object_link'><a href="../Chef/Knife.html" title="Chef::Knife (class)">Chef::Knife</a></span></li>
-          
+
             <li class="next">KnifeGithubCleanup::GithubCleanup</li>
-          
+
         </ul>
         <a href="#" class="inheritanceTree">show all</a>
-      
+
       </dd>
-    
-  
-  
-    
-  
-    
-  
-  
-  
+
+
+
+
+
+
+
+
+
     <dt class="r2 last">Defined in:</dt>
     <dd class="r2 last">lib/chef/knife/github_cleanup.rb</dd>
-  
+
 </dl>
 <div class="clear"></div>
 
@@ -108,104 +108,104 @@
 
 
 
-  
+
     <h2>
       Instance Method Summary
       <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
     </h2>
 
     <ul class="summary">
-      
+
         <li class="public ">
   <span class="summary_signature">
-    
+
       <a href="#repo_cleanup-instance_method" title="#repo_cleanup (instance method)">- (Object) <strong>repo_cleanup</strong>(repo) </a>
-    
 
-    
+
+
   </span>
-  
-  
-  
-  
-  
-  
-  
 
-  
+
+
+
+
+
+
+
+
     <span class="summary_desc"><div class='inline'></div></span>
-  
+
 </li>
 
-      
+
         <li class="public ">
   <span class="summary_signature">
-    
+
       <a href="#repo_status_clean%3F-instance_method" title="#repo_status_clean? (instance method)">- (Boolean) <strong>repo_status_clean?</strong>(repo, cookbook) </a>
-    
 
-    
+
+
   </span>
-  
-  
-  
-  
-  
-  
-  
 
-  
+
+
+
+
+
+
+
+
     <span class="summary_desc"><div class='inline'></div></span>
-  
+
 </li>
 
-      
+
         <li class="public ">
   <span class="summary_signature">
-    
+
       <a href="#run-instance_method" title="#run (instance method)">- (Object) <strong>run</strong> </a>
-    
 
-    
+
+
   </span>
-  
-  
-  
-  
-  
-  
-  
 
-  
+
+
+
+
+
+
+
+
     <span class="summary_desc"><div class='inline'></div></span>
-  
+
 </li>
 
-      
+
     </ul>
-  
 
 
-  
-  
-  
-  
-  
-  
+
+
+
+
+
+
+
 
   <div id="instance_method_details" class="method_details_list">
     <h2>Instance Method Details</h2>
 
-    
+
       <div class="method_details first">
   <h3 class="signature first" id="repo_cleanup-instance_method">
-  
-    - (<tt>Object</tt>) <strong>repo_cleanup</strong>(repo) 
-  
 
-  
+    - (<tt>Object</tt>) <strong>repo_cleanup</strong>(repo)
 
-  
+
+
+
+
 </h3><table class="source_code">
   <tr>
     <td>
@@ -236,7 +236,7 @@
     <span class='kw'>if</span> <span class='id identifier rubyid_repo_status_clean?'>repo_status_clean?</span><span class='lparen'>(</span><span class='id identifier rubyid_repo'>repo</span><span class='comma'>,</span> <span class='id identifier rubyid_cookbook'>cookbook</span><span class='rparen'>)</span>
       <span class='comment'># delete the repo
 </span>      <span class='id identifier rubyid_ui'>ui</span><span class='period'>.</span><span class='id identifier rubyid_info'>info</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Processing [D] </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_repo'>repo</span><span class='rbrace'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
-      <span class='const'>FileUtils</span><span class='period'>.</span><span class='id identifier rubyid_remove_entry'>remove_entry</span><span class='lparen'>(</span><span class='id identifier rubyid_cookbook'>cookbook</span><span class='rparen'>)</span> 
+      <span class='const'>FileUtils</span><span class='period'>.</span><span class='id identifier rubyid_remove_entry'>remove_entry</span><span class='lparen'>(</span><span class='id identifier rubyid_cookbook'>cookbook</span><span class='rparen'>)</span>
     <span class='kw'>end</span>
   <span class='kw'>else</span>
     <span class='id identifier rubyid_puts'>puts</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>cannot find repo path for: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_repo'>repo</span><span class='rbrace'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_config'>config</span><span class='lbracket'>[</span><span class='symbol'>:all</span><span class='rbracket'>]</span>
@@ -246,36 +246,36 @@
   </tr>
 </table>
 </div>
-    
+
       <div class="method_details ">
   <h3 class="signature " id="repo_status_clean?-instance_method">
-  
-    - (<tt>Boolean</tt>) <strong>repo_status_clean?</strong>(repo, cookbook) 
-  
 
-  
+    - (<tt>Boolean</tt>) <strong>repo_status_clean?</strong>(repo, cookbook)
 
-  
+
+
+
+
 </h3><div class="docstring">
   <div class="discussion">
-    
+
 
   </div>
 </div>
 <div class="tags">
-  
+
 <p class="tag_title">Returns:</p>
 <ul class="return">
-  
+
     <li>
-      
-      
+
+
         <span class='type'>(<tt>Boolean</tt>)</span>
-      
-      
-      
+
+
+
     </li>
-  
+
 </ul>
 
 </div><table class="source_code">
@@ -311,14 +311,14 @@
   <span class='kw'>unless</span> <span class='id identifier rubyid_status'>status</span><span class='period'>.</span><span class='id identifier rubyid_stdout'>stdout</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'># On branch master\nnothing to commit (working directory clean)\n</span><span class='tstring_end'>&quot;</span></span>
     <span class='id identifier rubyid_ui'>ui</span><span class='period'>.</span><span class='id identifier rubyid_info'>info</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Processing [C] </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_repo'>repo</span><span class='rbrace'>}</span><span class='tstring_content'> (Action needed!)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
     <span class='id identifier rubyid_status'>status</span><span class='period'>.</span><span class='id identifier rubyid_stdout'>stdout</span><span class='period'>.</span><span class='id identifier rubyid_lines'>lines</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_l'>l</span><span class='op'>|</span> <span class='id identifier rubyid_puts'>puts</span> <span class='id identifier rubyid_l'>l</span><span class='period'>.</span><span class='id identifier rubyid_sub'>sub</span><span class='lparen'>(</span> <span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>^</span><span class='regexp_end'>/</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>    </span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='rbrace'>}</span>
-    <span class='kw'>return</span> <span class='kw'>false</span>   
+    <span class='kw'>return</span> <span class='kw'>false</span>
   <span class='kw'>end</span>
   <span class='id identifier rubyid_log'>log</span> <span class='op'>=</span> <span class='id identifier rubyid_shell_out!'>shell_out!</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>git log --branches --not --remotes --simplify-by-decoration --decorate --oneline</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:cwd</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_cookbook'>cookbook</span><span class='rparen'>)</span>
   <span class='kw'>unless</span> <span class='id identifier rubyid_log'>log</span><span class='period'>.</span><span class='id identifier rubyid_stdout'>stdout</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
     <span class='id identifier rubyid_ui'>ui</span><span class='period'>.</span><span class='id identifier rubyid_info'>info</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Processing [B] </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_repo'>repo</span><span class='rbrace'>}</span><span class='tstring_content'> (Action needed!)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
     <span class='id identifier rubyid_ui'>ui</span><span class='period'>.</span><span class='id identifier rubyid_info'>info</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>    Please check your branches, one of them has unsaved changes</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
     <span class='id identifier rubyid_log'>log</span><span class='period'>.</span><span class='id identifier rubyid_stdout'>stdout</span><span class='period'>.</span><span class='id identifier rubyid_lines'>lines</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_l'>l</span><span class='op'>|</span> <span class='id identifier rubyid_puts'>puts</span> <span class='id identifier rubyid_l'>l</span><span class='period'>.</span><span class='id identifier rubyid_sub'>sub</span><span class='lparen'>(</span> <span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>^</span><span class='regexp_end'>/</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>    </span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='rbrace'>}</span>
-    <span class='kw'>return</span> <span class='kw'>false</span>   
+    <span class='kw'>return</span> <span class='kw'>false</span>
   <span class='kw'>end</span>
   <span class='kw'>return</span> <span class='kw'>true</span>
 <span class='kw'>end</span></pre>
@@ -326,16 +326,16 @@
   </tr>
 </table>
 </div>
-    
+
       <div class="method_details ">
   <h3 class="signature " id="run-instance_method">
-  
-    - (<tt>Object</tt>) <strong>run</strong> 
-  
 
-  
+    - (<tt>Object</tt>) <strong>run</strong>
 
-  
+
+
+
+
 </h3><table class="source_code">
   <tr>
     <td>
@@ -382,7 +382,7 @@
 </span>  <span class='id identifier rubyid_extend'>extend</span> <span class='const'>Chef</span><span class='op'>::</span><span class='const'>Mixin</span><span class='op'>::</span><span class='const'>ShellOut</span>
 
   <span class='comment'># validate base options from base module.
-</span>  <span class='id identifier rubyid_validate_base_options'>validate_base_options</span>      
+</span>  <span class='id identifier rubyid_validate_base_options'>validate_base_options</span>
 
   <span class='comment'># Display information if debug mode is on.
 </span>  <span class='id identifier rubyid_display_debug_info'>display_debug_info</span>
@@ -410,7 +410,7 @@
   </tr>
 </table>
 </div>
-    
+
   </div>
 
 </div>

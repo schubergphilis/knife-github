@@ -44,7 +44,7 @@ module GithubClient
           http.verify_mode = OpenSSL::SSL::VERIFY_PEER
         end
       end
-      
+
       initheader = {}
       if token
         initheader = {"Authorization" => "token #{token}"}

@@ -27,7 +27,7 @@ module KnifeGithubSearch
       require 'chef/knife/github_baselist'
       include Chef::Knife::GithubBaseList
     end
-      
+
     banner "knife github search STRING (options)"
     category "github"
 
@@ -41,7 +41,7 @@ module KnifeGithubSearch
     def run
 
       # validate base options from base module.
-      validate_base_options      
+      validate_base_options
 
       # Display information if debug mode is on.
       display_debug_info
@@ -49,10 +49,10 @@ module KnifeGithubSearch
       # Get the name_args from the command line
       query = name_args.join(' ')
 
-      if query.nil? || query.empty? 
+      if query.nil? || query.empty?
         Chef::Log.error("Please specify a search query")
         exit 1
-      end 
+      end
 
       result = github_search_repos(query)
 
@@ -66,7 +66,7 @@ module KnifeGithubSearch
         Chef::Log.error("No results when searching for: " + query)
       else
         items = []
-        result['repositories'].each { |n| items << [ "#{n['name']}", n ] } 
+        result['repositories'].each { |n| items << [ "#{n['name']}", n ] }
         display_info(items, columns )
       end
     end
@@ -86,7 +86,7 @@ module KnifeGithubSearch
       params[:action] = "GET"
       params[:token] = get_github_token
       params[:request_uri] = "?#{data}"
-      connection.request(params) 
+      connection.request(params)
     end
 
   end
